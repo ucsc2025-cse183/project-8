@@ -16,19 +16,33 @@ from .common import Field, db, auth
 #
 
 
-# define post_item table
+# Ingredient table
 db.define_table(
-    "post_item",
-    Field("content", "text", requires=IS_NOT_EMPTY()),
-    auth.signature
+    "ingredients",
+    Field("name", type="string", default=""),
+    Field("unit", type="string"),
+    Field("calories_per_unit", type="integer"),
+    Field("description", type="string")
 )
 
-# define tag_item table
+# Recipe table
 db.define_table(
-    "tag_item",
-    Field("name", "string"),
-    Field("post_item_id", "reference post_item"),
-    auth.signature
+    "recipes",
+    Field("name", type="string", default=""),
+    Field("type", type="string", default=""),
+    Field("description", type="string", default="")
+    Field("image", type="upload", uploadfolder=settings.UPLOADFOLDER),
+    Field("author", type="string", default=""),
+    Field("instruction_steps", type="string", default=""),
+    Field("servings", type="integer")
+)
+
+# Link table
+db.define_table(
+    "link",
+    Field("recipe_id", type="reference recipes"),
+    Field("ingredient_id", type="reference ingredients"),
+    Field("quantity_per_serving", type="integer")
 )
 
 # always commit models
