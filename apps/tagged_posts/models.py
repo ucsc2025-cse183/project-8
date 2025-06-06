@@ -30,7 +30,7 @@ db.define_table(
     "recipes",
     Field("name", type="string", default=""),
     Field("type", type="string", default=""),
-    Field("description", type="string", default="")
+    Field("description", type="string", default=""),
     Field("image", type="upload", uploadfolder=settings.UPLOAD_FOLDER),
     Field("author", type="string", default=""),
     Field("instruction_steps", type="string", default=""),
