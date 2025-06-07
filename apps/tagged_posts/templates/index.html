@@ -55,6 +55,11 @@
       </form>
 
       <h3 class="mt-4">All Ingredients</h3>
+      <div class="search-ingredients mt-2">
+        <input v-model="search_ingredient_name" placeholder="Search ingredients by name..." style="width: 70%;">
+        <button @click="loadIngredients(search_ingredient_name)" class="submit-content ml-2">Search</button>
+        <button v-if="search_ingredient_name" @click="clearSearch" class="submit-content ml-2">Clear</button>
+      </div>
       <ul class="ingredient-list">
         <li v-for="ingredient in ingredients" :key="ingredient.id" class="border p-2 mt-2">
           <strong>{{ ingredient.name }}</strong> ({{ ingredient.unit || 'N/A' }})<br>
@@ -84,7 +89,8 @@ createApp({
         calories_per_unit: null,
         description: ""
       },
-      ingredients: []
+      ingredients: [],
+      search_ingredient_name: ""
     };
   },
   methods: {
@@ -104,8 +110,12 @@ createApp({
       const data = await r.json();
       this.tags = data.tags;
     },
-    async loadIngredients() {
-      const r = await fetch(`/tagged_posts/api/ingredients`);
+    async loadIngredients(search_term = '') {
+      let url = `/tagged_posts/api/ingredients`;
+      if (search_term) {
+        url += `?name=${encodeURIComponent(search_term)}`;
+      }
+      const r = await fetch(url);
       const data = await r.json();
       this.ingredients = data.ingredients;
     },
@@ -166,6 +176,10 @@ createApp({
       await this.loadPosts();
       await this.loadTags();
       await this.loadIngredients();
+    },
+    async clearSearch() {
+      this.search_ingredient_name = '';
+      await this.loadIngredients(); // Reload all ingredients
     }
   },
   mounted() {
