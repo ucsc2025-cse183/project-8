@@ -117,3 +117,59 @@ def get_tags():
     tags = db(db.tag_item).select(db.tag_item.name, distinct=True)
     tag_names = sorted(set(tag.name for tag in tags))
     return {"tags": tag_names}
+
+
+# GET /api/ingredients?name=x - search ingredients by name
+@action("api/ingredients", method=["GET"])
+@action.uses(db, auth.user)
+def get_ingredients():
+    name_query = request.query.get("name")
+
+    if name_query:
+        # Case-insensitive search for ingredient name containing the query
+        ingredients = db(db.ingredients.name.ilike("%%%s%%" % name_query)).select()
+    else:
+        # Return all ingredients if no name query is provided
+        ingredients = db(db.ingredients).select()
+
+    return {
+        "ingredients": [
+            {
+                "id": ingredient.id,
+                "name": ingredient.name,
+                "unit": ingredient.unit,
+                "calories_per_unit": ingredient.calories_per_unit,
+                "description": ingredient.description,
+            }
+            for ingredient in ingredients
+        ]
+    }
+
+
+# POST /api/ingredients - add a new ingredient
+@action("api/ingredients", method=["POST"])
+@action.uses(db, auth.user)
+def add_ingredient():
+    data = request.json
+    name = data.get("name")
+    unit = data.get("unit")
+    calories_per_unit = data.get("calories_per_unit")
+    description = data.get("description")
+
+    if not name:
+        abort(400, "Ingredient name is required.")
+
+    # Check if an ingredient with the same name already exists (case-insensitive)
+    existing_ingredient = db(db.ingredients.name.ilike(name)).select().first()
+    if existing_ingredient:
+        abort(409, "An ingredient with this name already exists.") # 409 Conflict
+
+    ingredient_id = db.ingredients.insert(
+        name=name,
+        unit=unit,
+        calories_per_unit=calories_per_unit,
+        description=description
+    )
+    db.commit()
+
+    return {"id": ingredient_id, "message": "Ingredient added successfully."}

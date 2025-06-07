@@ -32,6 +32,37 @@
           {{ tag }}
         </button>
       </div>
+
+      <h3 class="mt-4">Add New Ingredient</h3>
+      <form @submit.prevent="submitIngredient">
+        <div>
+          <label for="ingredient-name">Name:</label>
+          <input id="ingredient-name" v-model="new_ingredient.name" type="text" required style="width: 100%;">
+        </div>
+        <div class="mt-2">
+          <label for="ingredient-unit">Unit:</label>
+          <input id="ingredient-unit" v-model="new_ingredient.unit" type="text" style="width: 100%;">
+        </div>
+        <div class="mt-2">
+          <label for="ingredient-calories">Calories per Unit:</label>
+          <input id="ingredient-calories" v-model.number="new_ingredient.calories_per_unit" type="number" style="width: 100%;">
+        </div>
+        <div class="mt-2">
+          <label for="ingredient-description">Description:</label>
+          <textarea id="ingredient-description" v-model="new_ingredient.description" rows="2" style="width: 100%;"></textarea>
+        </div>
+        <button type="submit" class="submit-content mt-2">Add Ingredient</button>
+      </form>
+
+      <h3 class="mt-4">All Ingredients</h3>
+      <ul class="ingredient-list">
+        <li v-for="ingredient in ingredients" :key="ingredient.id" class="border p-2 mt-2">
+          <strong>{{ ingredient.name }}</strong> ({{ ingredient.unit || 'N/A' }})<br>
+          Calories/Unit: {{ ingredient.calories_per_unit || 'N/A' }}<br>
+          <span v-if="ingredient.description">{{ ingredient.description }}</span>
+        </li>
+        <li v-if="ingredients.length === 0">No ingredients found. Add some above!</li>
+      </ul>
     </div>
   </div>
 </div>
@@ -46,7 +77,14 @@ createApp({
       new_post: "",
       posts: [],
       tags: [],
-      selected_tags: []
+      selected_tags: [],
+      new_ingredient: {
+        name: "",
+        unit: "",
+        calories_per_unit: null,
+        description: ""
+      },
+      ingredients: []
     };
   },
   methods: {
@@ -65,6 +103,11 @@ createApp({
       const r = await fetch(`/tagged_posts/api/tags`);
       const data = await r.json();
       this.tags = data.tags;
+    },
+    async loadIngredients() {
+      const r = await fetch(`/tagged_posts/api/ingredients`);
+      const data = await r.json();
+      this.ingredients = data.ingredients;
     },
     async submitPost() {
       if (!this.new_post.trim()) return;
@@ -88,9 +131,41 @@ createApp({
       }
       await this.loadPosts();
     },
+    async submitIngredient() {
+      if (!this.new_ingredient.name.trim()) {
+        alert("Ingredient name is required!");
+        return;
+      }
+      try {
+        const r = await fetch(`/tagged_posts/api/ingredients`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(this.new_ingredient)
+        });
+        if (r.ok) {
+          const data = await r.json();
+          alert(data.message || "Ingredient added successfully!");
+          // Clear the form
+          this.new_ingredient = {
+            name: "",
+            unit: "",
+            calories_per_unit: null,
+            description: ""
+          };
+          await this.loadIngredients(); // Refresh the list
+        } else {
+          const errorData = await r.json();
+          alert(`Error adding ingredient: ${errorData.message || r.statusText}`);
+        }
+      } catch (e) {
+        console.error("Network or parsing error:", e);
+        alert("An unexpected error occurred while adding the ingredient.");
+      }
+    },
     async refresh() {
       await this.loadPosts();
       await this.loadTags();
+      await this.loadIngredients();
     }
   },
   mounted() {
