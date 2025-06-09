@@ -173,9 +173,40 @@ def add_ingredient():
     return {"id": ingredient_id, "message": "Ingredient added successfully."}
 
 
-# POST /api/recipes - add a new recipe
+# GET /api/recipes - get all recipes
+@action("api/recipes", method=["GET"])
+@action.uses(db, auth.user)
+def get_recipes():
+    recipes = db(db.recipes).select(orderby=~db.recipes.created_on)
+    
+    return {
+        "recipes": [
+            {
+                "id": recipe.id,
+                "name": recipe.name,
+                "description": recipe.description,
+                "instructions": recipe.instructions,
+                "author": db.auth_user[recipe.author].username if db.auth_user[recipe.author] else "unknown",
+                "created_on": recipe.created_on,
+                "updated_on": recipe.updated_on,
+                "ingredients": [
+                    {
+                        "ingredient_id": link.ingredient_id,
+                        "quantity": link.quantity,
+                        "name": db.ingredients[link.ingredient_id].name if db.ingredients[link.ingredient_id] else "Unknown"
+                    }
+                    for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
+                ]
+            }
+            for recipe in recipes
+        ]
+    }
+
+
+# POST /api/recipes - create a new recipe
 @action("api/recipes", method=["POST"])
 @action.uses(db, auth.user)
+
 def add_recipe():
     data              = request.json
     name              = data.get("name")
@@ -193,10 +224,12 @@ def add_recipe():
     if not user_id:
         abort(403, "Invalid user.")
 
+
+    # Create the recipe
     recipe_id = db.recipes.insert(
         name=name,
-        type=recipe_type,
         description=description,
+      
         author=user_id,        
         instruction_steps=instruction_steps,
         servings=servings
@@ -214,13 +247,32 @@ def add_recipe():
             db.rollback()
             abort(404, f"Ingredient with ID {iid} not found.")
 
-        db.link.insert(
+
+    # Add new ingredients
+    for ingredient in ingredients:
+        if not ingredient.get("id") or ingredient.get("quantity") is None:
+            db.rollback()
+            abort(400, "Invalid ingredient data")
+        
+        db.recipe_ingredients.insert(
             recipe_id=recipe_id,
             ingredient_id=iid,
             quantity_per_serving=qty
         )
         total_calories += rec.calories_per_unit * qty
 
+# DELETE /api/recipes/<recipe_id> - delete a recipe
+@action("api/recipes/<recipe_id:int>", method=["DELETE"])
+@action.uses(db, auth.user)
+def delete_recipe(recipe_id):
+    recipe = db.recipes(recipe_id)
+    if not recipe or recipe.author != auth.user_id:
+        abort(403, "Not authorized to delete this recipe")
+
+    # Delete recipe ingredients first (due to foreign key constraint)
+    db(db.recipe_ingredients.recipe_id == recipe_id).delete()
+    # Delete the recipe
+    db(db.recipes.id == recipe_id).delete()
     db.commit()
     return {
         "id": recipe_id,
@@ -229,11 +281,8 @@ def add_recipe():
     }
 
 
-    return {
-        "id": recipe_id,
-        "message": "Recipe added successfully.",
-        "total_calories_per_serving": total_calories_per_serving
-    }
+    return {"message": "Recipe deleted successfully"}
+
 
 # POST api/recipes/<recipe_id>/image - upload an image for a recipe
 @action("api/recipes/<recipe_id:int>/image", method=["POST"])

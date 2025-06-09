@@ -3,6 +3,7 @@ This file defines the database models
 """
 
 from pydal.validators import *
+from datetime import datetime
 
 from py4web import request
 
@@ -31,21 +32,20 @@ db.define_table(
 # Recipe table
 db.define_table(
     "recipes",
-    Field("name", type="string", default=""),
-    Field("type", type="string", default=""),
-    Field("description", type="string", default=""),
-    Field("image", type="upload", uploadfolder=settings.UPLOAD_FOLDER),
+    Field("name", type="string", required=True),
+    Field("description", type="text"),
+    Field("instructions", type="text"),
     Field("author", "reference auth_user"),
-    Field("instruction_steps", type="string", default=""),
-    Field("servings", type="integer")
+    Field("created_on", type="datetime", default=datetime.utcnow),
+    Field("updated_on", type="datetime", update=datetime.utcnow)
 )
 
-# Link table
+# Recipe-Ingredient link table
 db.define_table(
-    "link",
-    Field("recipe_id", type="reference recipes"),
-    Field("ingredient_id", type="reference ingredients"),
-    Field("quantity_per_serving", type="integer")
+    "recipe_ingredients",
+    Field("recipe_id", "reference recipes"),
+    Field("ingredient_id", "reference ingredients"),
+    Field("quantity", type="double", required=True)
 )
 
 # Post-and-Tag tables for the #hashtag feature
