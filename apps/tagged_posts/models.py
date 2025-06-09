@@ -33,7 +33,7 @@ db.define_table(
     Field("type", type="string", default=""),
     Field("description", type="string", default=""),
     Field("image", type="upload", uploadfolder=settings.UPLOAD_FOLDER),
-    Field("author", "reference auth_user"),
+    Field("author", type="string", default=""),
     Field("instruction_steps", type="string", default=""),
     Field("servings", type="integer")
 )
