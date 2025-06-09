@@ -129,32 +129,3 @@ CREATE TABLE "link"(
     "quantity_per_serving" INTEGER
 );
 success!
-timestamp: 2025-06-08T16:46:09.325683
-CREATE TABLE "ingredients"(
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-    "name" CHAR(512),
-    "unit" CHAR(512),
-    "calories_per_unit" INTEGER,
-    "description" CHAR(512)
-);
-success!
-timestamp: 2025-06-08T16:46:09.329932
-CREATE TABLE "recipes"(
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-    "name" CHAR(512),
-    "type" CHAR(512),
-    "description" CHAR(512),
-    "image" CHAR(512),
-    "author" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
-    "instruction_steps" CHAR(512),
-    "servings" INTEGER
-);
-success!
-timestamp: 2025-06-08T16:46:09.336721
-CREATE TABLE "link"(
-    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-    "recipe_id" INTEGER REFERENCES "recipes" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
-    "ingredient_id" INTEGER REFERENCES "ingredients" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
-    "quantity_per_serving" INTEGER
-);
-success!
