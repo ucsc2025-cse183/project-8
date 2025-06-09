@@ -36,8 +36,18 @@
             </div>
             <div class="mb-2">
               <label for="recipe-instructions">Instructions:</label>
-              <textarea id="recipe-instructions" v-model="currentRecipe.instructions" rows="4" style="width: 100%;"></textarea>
+              <textarea id="recipe-instructions" v-model="currentRecipe.instruction_steps" rows="4" style="width: 100%;"></textarea>
             </div>
+
+            <div class="mb-2">
+              <label for="recipe-type">Type:</label>
+              <input id="recipe-type" v-model="currentRecipe.type" type="text" required style="width: 100%;">
+            </div>
+            <div class="mb-2">
+              <label for="recipe-servings">Servings:</label>
+              <input id="recipe-servings" v-model.number="currentRecipe.servings" type="number" min="1" required style="width: 100%;">
+            </div>
+
             
             <div class="mb-2">
               <label>Ingredients:</label>
@@ -151,8 +161,10 @@ createApp({
       editingRecipe: null,
       currentRecipe: {
         name: "",
+        type: "",        
         description: "",
-        instructions: "",
+        instruction_steps: "",  
+        servings: 1,          
         ingredients: []
       }
     };
@@ -181,6 +193,7 @@ createApp({
       }
       const r = await fetch(url);
       const data = await r.json();
+      console.log("Loaded ingredients:", data); // 👈 Add this line
       this.ingredients = data.ingredients;
     },
     async submitPost() {
@@ -210,30 +223,37 @@ createApp({
         alert("Ingredient name is required!");
         return;
       }
+
       try {
         const r = await fetch(`/tagged_posts/api/ingredients`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.new_ingredient)
         });
-        if (r.ok) {
-          const data = await r.json();
-          alert(data.message || "Ingredient added successfully!");
-          // Clear the form
-          this.new_ingredient = {
-            name: "",
-            unit: "",
-            calories_per_unit: null,
-            description: ""
-          };
-          await this.loadIngredients(); // Refresh the list
-        } else {
+
+        let errorMsg = r.statusText;
+        let data = null;
+
+        const contentType = r.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
           const errorData = await r.json();
-          alert(`Error adding ingredient: ${errorData.message || r.statusText}`);
+          errorMsg = errorData.message || r.statusText;
         }
+
+        if (!r.ok) throw new Error(errorMsg);
+
+        alert(data.message || "Ingredient added successfully!");
+        this.new_ingredient = {
+          name: "",
+          unit: "",
+          calories_per_unit: null,
+          description: ""
+        };
+        await this.loadIngredients();
+
       } catch (e) {
-        console.error("Network or parsing error:", e);
-        alert("An unexpected error occurred while adding the ingredient.");
+        console.error("submitIngredient error:", e);
+        alert(`Error adding ingredient:\n${e.message}`);
       }
     },
     async loadRecipes() {
@@ -252,14 +272,17 @@ createApp({
     },
     editRecipe(recipe) {
       this.editingRecipe = recipe;
+      this.showNewRecipeForm = true;
       this.currentRecipe = {
         id: recipe.id,
         name: recipe.name,
+        type: recipe.type,                    // ← pull in the recipe type
         description: recipe.description,
-        instructions: recipe.instructions,
+        instruction_steps: recipe.instruction_steps,  // ← match the back-end field
+        servings: recipe.servings,             // ← pull in servings too
         ingredients: recipe.ingredients.map(i => ({
           id: i.ingredient_id,
-          quantity: i.quantity
+          quantity: i.quantity_per_serving    // ← match the back-end key here too
         }))
       };
     },
@@ -270,42 +293,29 @@ createApp({
           : '/tagged_posts/api/recipes';
         
         const method = this.editingRecipe ? 'PUT' : 'POST';
-        
+
+        const transformedRecipe = {
+          ...this.currentRecipe,
+          ingredients: this.currentRecipe.ingredients.map(i => ({
+            id: i.id,
+            quantity_per_serving: i.quantity
+          }))
+        };
+
         const r = await fetch(url, {
           method: method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(this.currentRecipe)
+          body: JSON.stringify(transformedRecipe)
         });
-        
-        if (r.ok) {
-          await this.loadRecipes();
-          this.cancelRecipeEdit();
-        } else {
-          const errorData = await r.json();
-          alert(`Error saving recipe: ${errorData.message || r.statusText}`);
-        }
+
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.message || "Failed to save recipe");
+
+        await this.loadRecipes();
+        this.cancelRecipeEdit();
       } catch (e) {
         console.error("Error saving recipe:", e);
         alert("An unexpected error occurred while saving the recipe.");
-      }
-    },
-    async deleteRecipe(id) {
-      if (!confirm("Are you sure you want to delete this recipe?")) return;
-      
-      try {
-        const r = await fetch(`/tagged_posts/api/recipes/${id}`, {
-          method: 'DELETE'
-        });
-        
-        if (r.ok) {
-          await this.loadRecipes();
-        } else {
-          const errorData = await r.json();
-          alert(`Error deleting recipe: ${errorData.message || r.statusText}`);
-        }
-      } catch (e) {
-        console.error("Error deleting recipe:", e);
-        alert("An unexpected error occurred while deleting the recipe.");
       }
     },
     cancelRecipeEdit() {
@@ -313,8 +323,10 @@ createApp({
       this.editingRecipe = null;
       this.currentRecipe = {
         name: "",
+        type: "",            
         description: "",
-        instructions: "",
+        instruction_steps: "",    
+        servings: 1,              
         ingredients: []
       };
     },
@@ -322,12 +334,16 @@ createApp({
       this.search_ingredient_name = '';
       await this.loadIngredients(); // Reload all ingredients
     },
-    async refresh() {
+  async refresh() {
+    try {
       await this.loadPosts();
       await this.loadTags();
-      await this.loadIngredients();
-      await this.loadRecipes();
+    } catch(e) {
+      console.warn("Skipping posts/tags refresh due to error:", e);
     }
+    await this.loadIngredients();
+    await this.loadRecipes();
+  }
   },
   mounted() {
     this.refresh();

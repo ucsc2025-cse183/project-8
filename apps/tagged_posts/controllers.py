@@ -126,10 +126,8 @@ def get_ingredients():
     name_query = request.query.get("name")
 
     if name_query:
-        # Case-insensitive search for ingredient name containing the query
         ingredients = db(db.ingredients.name.ilike("%%%s%%" % name_query)).select()
     else:
-        # Return all ingredients if no name query is provided
         ingredients = db(db.ingredients).select()
 
     return {
@@ -179,60 +177,57 @@ def add_ingredient():
 @action("api/recipes", method=["POST"])
 @action.uses(db, auth.user)
 def add_recipe():
-    data = request.json
-    name = data.get("name")
-    recipe_type = data.get("type")
-    description = data.get("description")
-    # image = data.get("image")
-    author = db.auth_user(auth.user_id)
+    data              = request.json
+    name              = data.get("name")
+    recipe_type       = data.get("type")
+    description       = data.get("description")
     instruction_steps = data.get("instruction_steps")
-    servings = data.get("servings")
-    #
-    ingredients_list = data.get("ingredients")
+    servings          = data.get("servings")
+    ingredients_list  = data.get("ingredients")
+
+    # store the user ID directly—don't try to get .username off it
+    user_id = auth.user_id
 
     if not all([name, recipe_type, description, instruction_steps, servings, ingredients_list]):
         abort(400, "Missing required fields for recipe.")
-
-    if not author:
+    if not user_id:
         abort(403, "Invalid user.")
-    username = author.username
 
     recipe_id = db.recipes.insert(
         name=name,
         type=recipe_type,
         description=description,
-        author=username,
+        author=user_id,        
         instruction_steps=instruction_steps,
         servings=servings
     )
 
-    #link
-
-    total_calories_per_serving = 0
-    for ingredient in ingredients_list:
-        ingredient_id = ingredient.get("id")
-        quantity_per_serving = ingredient.get("quantity_per_serving")
-
-        if not ingredient_id or quantity_per_serving is None:
-            db.rollback() # Rollback if any ingredient is missing data to avoid partial recipe creation
-            abort(400, "Invalid ingredient data.")
-
-        # Check if the ingredient exists
-        item = db.ingredients(ingredient_id)
-        if not item:
+    total_calories = 0
+    for ing in ingredients_list:
+        iid = ing.get("id")
+        qty = ing.get("quantity_per_serving")
+        if not iid or qty is None:
             db.rollback()
-            abort(404, f"Ingredient with ID {ingredient_id} not found.")
+            abort(400, "Invalid ingredient data.")
+        rec = db.ingredients(iid)
+        if not rec:
+            db.rollback()
+            abort(404, f"Ingredient with ID {iid} not found.")
 
         db.link.insert(
             recipe_id=recipe_id,
-            ingredient_id=ingredient_id,
-            quantity_per_serving=quantity_per_serving
+            ingredient_id=iid,
+            quantity_per_serving=qty
         )
-
-        # Calculate total calories per serving
-        total_calories_per_serving += (item.calories_per_unit * quantity_per_serving)
+        total_calories += rec.calories_per_unit * qty
 
     db.commit()
+    return {
+        "id": recipe_id,
+        "message": "Recipe added successfully.",
+        "total_calories_per_serving": total_calories
+    }
+
 
     return {
         "id": recipe_id,
@@ -260,3 +255,32 @@ def upload_recipe_image(recipe_id):
     db.commit()
 
     return {"message": "Image uploaded successfully.", "image_url": recipe.image}
+
+# GET /api/recipes
+# return all recipes with ingredients
+@action("api/recipes", method=["GET"])
+@action.uses(db, auth.user)
+def get_recipes():
+    rows = db(db.recipes).select(orderby=~db.recipes.id)
+    recipe_list = []
+
+    for row in rows:
+        links = db(db.link.recipe_id == row.id).select()
+        ingredients = [
+            {
+                "ingredient_id": link.ingredient_id,
+                "quantity": link.quantity_per_serving
+            }
+            for link in links
+        ]
+
+        recipe_list.append({
+            "id": row.id,
+            "name": row.name,
+            "description": row.description,
+            "instruction_steps": row.instruction_steps,
+            "servings": row.servings,
+            "ingredients": ingredients
+        })
+
+    return {"recipes": recipe_list}

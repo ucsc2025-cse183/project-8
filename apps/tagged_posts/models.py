@@ -4,6 +4,8 @@ This file defines the database models
 
 from pydal.validators import *
 
+from py4web import request
+
 from .common import Field, db, auth
 from . import settings
 
@@ -44,6 +46,20 @@ db.define_table(
     Field("recipe_id", type="reference recipes"),
     Field("ingredient_id", type="reference ingredients"),
     Field("quantity_per_serving", type="integer")
+)
+
+# Post-and-Tag tables for the #hashtag feature
+db.define_table(
+    "post_item",
+    Field("content", "text", default=""),
+    Field("created_by", "reference auth_user"),
+    Field("created_on", "datetime", default=request.now),
+)
+
+db.define_table(
+    "tag_item",
+    Field("name", "string", default=""),
+    Field("post_item_id", "reference post_item"),
 )
 
 # always commit models
