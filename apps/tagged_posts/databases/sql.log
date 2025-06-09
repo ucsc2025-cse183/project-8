@@ -158,3 +158,18 @@ CREATE TABLE "link"(
     "quantity_per_serving" INTEGER
 );
 success!
+timestamp: 2025-06-08T22:41:14.988011
+ALTER TABLE "recipes" ADD "instructions" TEXT;
+timestamp: 2025-06-08T22:41:14.988669
+ALTER TABLE "recipes" ADD "created_on" TIMESTAMP;
+timestamp: 2025-06-08T22:41:14.989075
+ALTER TABLE "recipes" ADD "updated_on" TIMESTAMP;
+success!
+timestamp: 2025-06-08T22:41:14.990416
+CREATE TABLE "recipe_ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "recipe_id" INTEGER REFERENCES "recipes" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "ingredient_id" INTEGER REFERENCES "ingredients" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "quantity" DOUBLE
+);
+success!
