@@ -173,3 +173,90 @@ def add_ingredient():
     db.commit()
 
     return {"id": ingredient_id, "message": "Ingredient added successfully."}
+
+
+# POST /api/recipes - add a new recipe
+@action("api/recipes", method=["POST"])
+@action.uses(db, auth.user)
+def add_recipe():
+    data = request.json
+    name = data.get("name")
+    recipe_type = data.get("type")
+    description = data.get("description")
+    # image = data.get("image")
+    author = db.auth_user(auth.user_id)
+    instruction_steps = data.get("instruction_steps")
+    servings = data.get("servings")
+    #
+    ingredients_list = data.get("ingredients")
+
+    if not all([name, recipe_type, description, instruction_steps, servings, ingredients_list]):
+        abort(400, "Missing required fields for recipe.")
+
+    if not author:
+        abort(403, "Invalid user.")
+    username = author.username
+
+    recipe_id = db.recipes.insert(
+        name=name,
+        type=recipe_type,
+        description=description,
+        author=username,
+        instruction_steps=instruction_steps,
+        servings=servings
+    )
+
+    #link
+
+    total_calories_per_serving = 0
+    for ingredient in ingredients_list:
+        ingredient_id = ingredient.get("id")
+        quantity_per_serving = ingredient.get("quantity_per_serving")
+
+        if not ingredient_id or quantity_per_serving is None:
+            db.rollback() # Rollback if any ingredient is missing data to avoid partial recipe creation
+            abort(400, "Invalid ingredient data.")
+
+        # Check if the ingredient exists
+        item = db.ingredients(ingredient_id)
+        if not item:
+            db.rollback()
+            abort(404, f"Ingredient with ID {ingredient_id} not found.")
+
+        db.link.insert(
+            recipe_id=recipe_id,
+            ingredient_id=ingredient_id,
+            quantity_per_serving=quantity_per_serving
+        )
+
+        # Calculate total calories per serving
+        total_calories_per_serving += (item.calories_per_unit * quantity_per_serving)
+
+    db.commit()
+
+    return {
+        "id": recipe_id,
+        "message": "Recipe added successfully.",
+        "total_calories_per_serving": total_calories_per_serving
+    }
+
+# POST api/recipes/<recipe_id>/image - upload an image for a recipe
+@action("api/recipes/<recipe_id:int>/image", method=["POST"])
+@action.uses(db, auth.user)
+def upload_recipe_image(recipe_id):
+    recipe = db.recipes(recipe_id)
+
+    if not recipe:
+        abort(404, "Recipe not found.")
+
+    if recipe.author != db.auth_user(auth.user_id).username:
+        abort(403, "You do not have permission to upload an image for this recipe.")
+    
+    if "image" not in request.files:
+            abort(400, "No image file provided.")
+
+    # Update the recipe with the image
+    recipe.update_record(image=request.files["image"])
+    db.commit()
+
+    return {"message": "Image uploaded successfully.", "image_url": recipe.image}
