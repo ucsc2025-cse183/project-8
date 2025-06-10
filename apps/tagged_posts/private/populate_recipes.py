@@ -1,3 +1,4 @@
+'''
 import requests
 from ..models import db
 from py4web.utils.populate import populate
@@ -70,3 +71,4 @@ def parse_quantity(measure_str):
 
 if __name__ == "__main__":
     import_recipes()
+'''
