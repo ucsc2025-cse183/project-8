@@ -6,7 +6,7 @@
       <div style="display: flex; gap: 20px;">
         
         <!-- left column -->
-        <div style="flex: 2;">
+        <div style="flex: 20;">
           <div class="post-section card">
             <textarea class="post-content" v-model="new_post" rows="4"></textarea>
             <button class="submit-content post-btn" @click="submitPost">Post</button>
@@ -55,7 +55,7 @@
                   <p>{{ recipe.description }}</p>
                   <div class="recipe-actions">
                     <button @click="editRecipe(recipe)" class="submit-content">Edit</button>
-                    <button @click="deleteRecipe(recipe.id)" class="ml-2">Delete</button>
+                    <button @click="deleteRecipe(recipe.id)" class="submit-content m1-2">Delete</button>
                   </div>
                 </div>
                 <div v-if="recipes.length === 0" class="mt-2">No recipes yet. Create your first recipe!</div>
@@ -328,6 +328,7 @@ createApp({
   },
   mounted() {
     this.loadRecipes();
+    this.loadIngredients();
   }
 }).mount("#app");
 </script>
@@ -340,7 +341,7 @@ createApp({
   --accent-hover: #ffea00;
   --border-color: #e0e0e0;
   --background-light: #eaf4fb; /* Soft blue */
-  --background-accent: #fffde7;
+  --background-accent: #f8f8f3;
   --text-primary: #222;
   --text-secondary: #666;
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
@@ -357,7 +358,6 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  background: var(--background-accent);
 }
 
 .main-left, .main-right {
@@ -404,7 +404,8 @@ body {
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(21,101,192,0.08);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  line-height: 0.4;
 }
 
 .submit-content::after {

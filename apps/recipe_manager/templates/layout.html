@@ -10,6 +10,58 @@
     .py4web-validation-error{margin-top:-16px; font-size:0.8em;color:red;}
     .grid-table-wrapper{overflow-x: auto;}
     </style>
+
+  <style>
+    nav.main-navbar {
+      background-color: var(--primary-color) !important;
+    }
+    nav.navbar .navbar-item,
+    nav.navbar .navbar-brand a,
+    nav.navbar .navbar-menu a {
+      color: rgb(23, 8, 233) !important;
+    }
+  </style>
+
+  <style>
+    body {
+      background: transparent
+                  url('[[=URL("static","images","kitchen.png")]]')
+                  no-repeat    /* ← stops tiling */
+                  center center /* position */
+                  fixed         /* lock to viewport */
+                  !important;
+      background-size: cover !important; /* scale to fill */
+    }
+  </style>
+
+  <style>
+    nav.main-navbar {
+      background-color: var(--primary-color) !important;
+    }
+    nav.main-navbar .navbar-title {
+      color: #ffd600 !important;
+    }
+  </style>
+
+  <style>
+    footer.black {
+      background-color: var(--primary-color) !important;
+      color: rgb(42, 39, 227) !important;                      
+    }
+    footer.black p {
+      color: #fff; 
+    }
+  </style>
+
+  <style>
+    .footer-mascot {
+      display: block;         
+      margin: 0 auto 0.5rem;     
+      width: 200px;             
+      height: auto;       
+    }
+  </style>
+
     [[block page_head]]<!-- individual pages can customize header here -->[[end]]
   </head>
   <body>
@@ -19,7 +71,7 @@
         <!-- Logo and Site Title -->
         <div class="navbar-left">
           <a href="[[=URL('index')]]" class="navbar-logo-link">
-            <img src="images/logo.png" alt="Site Logo" class="navbar-logo">
+            <img src="images/banchan.png" alt="Site Logo" class="navbar-logo">
             <span class="navbar-title">The Bananaboat Cookbook</span>
           </a>
         </div>
@@ -67,6 +119,11 @@
     </center>
     <!-- end of HTML inserted by extending template -->
     <footer class="black padded">
+    <img
+      src="images/mascot.png"
+      alt="Site Mascot"
+      class="footer-mascot"
+    >
       <p>
         Made with py4web
       </p>
