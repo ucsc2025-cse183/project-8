@@ -11,6 +11,21 @@
     .grid-table-wrapper{overflow-x: auto;}
     </style>
 
+    <style>
+    :root {
+      --primary-color: #1565c0;
+      --accent-color: #ffd600;
+      --accent-hover: #ffea00;
+      --border-color: #e0e0e0;
+      --background-light: #eaf4fb;
+      --text-primary: #222;
+      --text-secondary: #666;
+      --radius-md: 8px;
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    }
+  </style>
+
+
   <style>
     nav.main-navbar {
       background-color: var(--primary-color) !important;
@@ -26,11 +41,27 @@
     body {
       background: transparent
                   url('[[=URL("static","images","kitchen.png")]]')
-                  no-repeat    /* ← stops tiling */
-                  center center /* position */
-                  fixed         /* lock to viewport */
+                  no-repeat   
+                  center center
+                  fixed    
                   !important;
-      background-size: cover !important; /* scale to fill */
+      background-size: cover !important; 
+    }
+  </style>
+
+  <style>
+    form[action*="/auth/login"],
+    form[action*="/auth/register"],
+    form[action*="/auth/change_password"],
+    form[action*="/auth/profile"] {
+      background: #fff !important;
+      padding: 2rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      width: 500px !important;
+      height: 500px !important;  
+      max-width: none !important;  
+      margin: 2rem auto;
     }
   </style>
 
@@ -57,7 +88,7 @@
     .footer-mascot {
       display: block;         
       margin: 0 auto 0.5rem;     
-      width: 200px;             
+      width: 150px;             
       height: auto;       
     }
   </style>
@@ -76,8 +107,8 @@
           </a>
         </div>
         <!-- Navigation Links -->
-        <ul class="navbar-links">
-          <li><a href="[[=URL('index')]]">All Recipes</a></li>
+        <ul class="navbar-links"> 
+          <li><a href="[[=URL('index')]]" class="navbar-link is-primary">All Recipes</a></li>
         </ul>
         <!-- User Info (right) -->
         <div class="navbar-user">
@@ -125,7 +156,7 @@
       class="footer-mascot"
     >
       <p>
-        Made with py4web
+         
       </p>
     </footer>
   </body>
