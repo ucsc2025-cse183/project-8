@@ -1,9 +1,10 @@
 import requests
 
 def import_recipes(db):
-    if db(db.recipes.id > 0).count() > 0:
+    print("Starting import_recipes")
+    """ if db(db.recipes.id > 0).count() > 0:
         print("Recipes already exist in the database.")
-        return
+        return """
 
     print("Fetching recipes from TheMealDB API...")
     url = "https://www.themealdb.com/api/json/v1/1/search.php?s="
