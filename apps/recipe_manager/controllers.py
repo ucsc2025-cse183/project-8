@@ -131,7 +131,7 @@ def get_recipes():
                     }
                     for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
                 ],
-                "image": recipe.image #URL("uploads", recipe.image) if recipe.image else None
+                "image": recipe.image
             }
             for recipe in recipes
         ]
@@ -193,7 +193,7 @@ def create_recipe():
     return {"id": recipe_id, "message": "Recipe created successfully"}
 
 # image serving
-@action("uploads/<filename>")
+'''@action("uploads/<filename>")
 def serve_image(filename):
     print("Serve image", filename)
     if ".." in filename or filename.startswith("/"):
@@ -206,6 +206,7 @@ def serve_image(filename):
     with open(path, "rb") as f:
         fileData = f.read()
         raise HTTP(200, body=fileData, headers={"Content-Type": mime_type})
+'''
 
 
 # PUT /api/recipes/<recipe_id> - update a recipe

@@ -65,8 +65,7 @@
       <div class="recipe-content">
         <h4>{{ recipe.name }}</h4>
         <p>{{ recipe.description }}</p>
-        <pre>{{ recipe.image }}</pre>
-        <img v-if="recipe.image" :src="recipe.image" alt="Recipe Image" class="recipe-image">
+        <img v-if="recipe.image" :src="`/recipe_manager/download/${recipe.image}`" alt="Recipe Image" class="recipe-image">
       </div>
       <div class="recipe-actions">
         <button @click="editRecipe(recipe)" class="submit-content">Edit</button>
