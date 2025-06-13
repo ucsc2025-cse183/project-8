@@ -259,3 +259,13 @@ def upload_recipe_image(recipe_id):
 def populate_recipes_action():
     import_recipes(db)
     return "Recipes successfully imported from TheMealDB API."
+
+@action("all_recipes")
+@action.uses("all_recipes.html", auth.user)
+def all_recipes():
+    return {}
+
+@action("all_ingredients")
+@action.uses("all_ingredients.html", auth.user)
+def all_ingredients():
+    return {}

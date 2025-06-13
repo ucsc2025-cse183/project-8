@@ -35,6 +35,52 @@
     nav.navbar .navbar-menu a {
       color: rgb(23, 8, 233) !important;
     }
+
+    /* User menu dropdown styles */
+    .navbar-user ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .navbar-user > ul > li {
+      position: relative;
+    }
+
+    .navbar-user > ul > li > ul {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      min-width: 200px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 0.5rem 0;
+      z-index: 1000;
+    }
+
+    .navbar-user > ul > li:hover > ul {
+      display: block;
+    }
+
+    .navbar-user > ul > li > ul > li {
+      display: block;
+      width: 100%;
+    }
+
+    .navbar-user > ul > li > ul > li > a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary) !important;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .navbar-user > ul > li > ul > li > a:hover {
+      background-color: var(--background-light);
+      color: var(--primary-color) !important;
+    }
   </style>
 
   <style>
@@ -115,7 +161,9 @@
         </div>
         <!-- Navigation Links -->
         <ul class="navbar-links"> 
-          <li><a href="[[=URL('index')]]" class="navbar-link is-primary">All Recipes</a></li>
+          <li><a href="[[=URL('index')]]" class="navbar-link is-primary">Home</a></li>
+          <li><a href="[[=URL('all_recipes')]]" class="navbar-link is-primary">All Recipes</a></li>
+          <li><a href="[[=URL('all_ingredients')]]" class="navbar-link is-primary">All Ingredients</a></li>
         </ul>
         <!-- User Info (right) -->
         <div class="navbar-user">

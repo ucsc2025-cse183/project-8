@@ -10,129 +10,172 @@
                   !important;
       background-size: cover !important; 
     }
+
+    .page-container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .form-container {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .form-section {
+      flex: 1;
+      min-width: 0; /* Prevents flex items from overflowing */
+    }
+
+    .recipe-management, .card {
+      background: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 2rem;
+      height: 100%;
+      border: 1px solid var(--border-color);
+    }
+
+    .recipe-form, .ingredient-form {
+      margin-top: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1.5px solid var(--primary-color);
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      background: var(--background-accent);
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .ingredient-entry {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .ingredient-entry select {
+      flex: 2;
+    }
+
+    .ingredient-entry input {
+      flex: 1;
+    }
+
+    .submit-content {
+      background: white;
+      color: var(--primary-color);
+      border: 1.5px solid var(--primary-color);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .submit-content:hover {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    button[type="button"] {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button[type="button"]:hover {
+      background: var(--background-light);
+      border-color: var(--primary-color);
+    }
   </style>
 
-<div id="app" class="p-4">
-  <main class="padded">
-    <div class="main-left">
-      <div style="display: flex; gap: 20px;">
-        
-        <!-- left column -->
-        <div style="flex: 20;">
-          <div class="post-section card">
-            <textarea class="post-content" v-model="new_post" rows="4"></textarea>
-            <button class="submit-content post-btn" @click="submitPost">Post</button>
+<div id="app" class="page-container">
+  <div class="form-container">
+    <!-- Recipe Creation Form -->
+    <div class="form-section">
+      <div class="recipe-management">
+        <h3>Create New Recipe</h3>
+        <form @submit.prevent="submitRecipe" class="recipe-form">
+          <div class="form-group">
+            <label for="recipe-name">Recipe Name:</label>
+            <input id="recipe-name" v-model="currentRecipe.name" type="text" required>
           </div>
-          <div class="my-recipes-section card">
-            <h3>My Recipes</h3>
-            <button @click="showNewRecipeForm = true" class="submit-content create-recipe-btn">Create New Recipe</button>
-            <div class="recipe-management">
-              <!-- Recipe Creation/Edit Form -->
-              <div v-if="showNewRecipeForm || editingRecipe" class="recipe-form border p-3 mt-2">
-                <h4>{{ editingRecipe ? 'Edit Recipe' : 'New Recipe' }}</h4>
-                <form @submit.prevent="submitRecipe">
-                  <div class="mb-2">
-                    <label for="recipe-name">Recipe Name:</label>
-                    <input id="recipe-name" v-model="currentRecipe.name" type="text" required style="width: 100%;">
-                  </div>
-                  <div class="mb-2">
-                    <label for="recipe-description">Description:</label>
-                    <textarea id="recipe-description" v-model="currentRecipe.description" rows="2" style="width: 100%;"></textarea>
-                  </div>
-                  <div class="mb-2">
-                    <label for="recipe-instructions">Instructions:</label>
-                    <textarea id="recipe-instructions" v-model="currentRecipe.instructions" rows="4" style="width: 100%;"></textarea>
-                  </div>
-                  <div class="mb-2">
-                    <label>Ingredients:</label>
-                    <div v-for="(ingredient, index) in currentRecipe.ingredients" :key="index" class="ingredient-entry mb-2">
-                      <select v-model="ingredient.id" style="width: 60%;">
-                        <option v-for="i in ingredients" :key="i.id" :value="i.id">{{ i.name }}</option>
-                      </select>
-                      <input v-model.number="ingredient.quantity" type="number" placeholder="Qty" style="width: 20%;">
-                      <button type="button" @click="removeIngredient(index)" class="ml-2">×</button>
-                    </div>
-                    <button type="button" @click="addIngredient" class="submit-content mt-1">Add Ingredient</button>
-                  </div>
-                  <div class="mt-2">
-                    <button type="submit" class="submit-content">Save Recipe</button>
-                    <button type="button" @click="cancelRecipeEdit" class="ml-2">Cancel</button>
-                  </div>
-                </form>
-              </div>
-              <!-- Recipe List -->
-              <div class="recipe-list mt-2">
-                <div v-for="recipe in recipes" :key="recipe.id" class="recipe-item border p-2 mt-2">
-                  <h4>{{ recipe.name }}</h4>
-                  <p>{{ recipe.description }}</p>
-                  <div class="recipe-actions">
-                    <button @click="editRecipe(recipe)" class="submit-content">Edit</button>
-                    <button @click="deleteRecipe(recipe.id)" class="submit-content m1-2">Delete</button>
-                  </div>
-                </div>
-                <div v-if="recipes.length === 0" class="mt-2">No recipes yet. Create your first recipe!</div>
-              </div>
-            </div>
+          <div class="form-group">
+            <label for="recipe-description">Description:</label>
+            <textarea id="recipe-description" v-model="currentRecipe.description" rows="3"></textarea>
           </div>
-        </div>
-      </div>
-    </div>
-    <div class="main-right">
-      <!-- right column -->
-      <div style="flex: 1;">
-        <h3>Tags</h3>
-        <div class="tags">
-          <button 
-            v-for="tag in tags" 
-            :key="tag" 
-            class="tag" 
-            :class="{ selected: selected_tags.includes(tag) }"
-            @click="toggleTag(tag)">
-            {{ tag }}
-          </button>
-        </div>
-
-        <h3 class="mt-4">Add New Ingredient</h3>
-        <form @submit.prevent="submitIngredient" class="ingredient-form" aria-label="Add New Ingredient">
-          <fieldset>
-            <legend class="ingredient-form-legend">New Ingredient Details</legend>
-            <div class="ingredient-form-group">
-              <label for="ingredient-name">Name:</label>
-              <input id="ingredient-name" v-model="new_ingredient.name" type="text" required aria-required="true" aria-label="Ingredient Name">
+          <div class="form-group">
+            <label for="recipe-instructions">Instructions:</label>
+            <textarea id="recipe-instructions" v-model="currentRecipe.instructions" rows="6"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Ingredients:</label>
+            <div v-for="(ingredient, index) in currentRecipe.ingredients" :key="index" class="ingredient-entry">
+              <select v-model="ingredient.id">
+                <option v-for="i in ingredients" :key="i.id" :value="i.id">{{ i.name }}</option>
+              </select>
+              <input v-model.number="ingredient.quantity" type="number" placeholder="Qty">
+              <button type="button" @click="removeIngredient(index)">×</button>
             </div>
-            <div class="ingredient-form-group">
-              <label for="ingredient-unit">Unit:</label>
-              <input id="ingredient-unit" v-model="new_ingredient.unit" type="text" aria-label="Unit">
-            </div>
-            <div class="ingredient-form-group">
-              <label for="ingredient-calories">Calories per Unit:</label>
-              <input id="ingredient-calories" v-model.number="new_ingredient.calories_per_unit" type="number" aria-label="Calories per Unit">
-            </div>
-            <div class="ingredient-form-group">
-              <label for="ingredient-description">Description:</label>
-              <textarea id="ingredient-description" v-model="new_ingredient.description" rows="2" aria-label="Description"></textarea>
-            </div>
-            <button type="submit" class="submit-content ingredient-form-btn">Add Ingredient</button>
-          </fieldset>
+            <button type="button" @click="addIngredient" class="submit-content">Add Ingredient</button>
+          </div>
+          <button type="submit" class="submit-content">Save Recipe</button>
         </form>
-
-        <h3 class="mt-4">All Ingredients</h3>
-        <div class="search-ingredients mt-2">
-          <input v-model="search_ingredient_name" placeholder="Search ingredients by name..." style="width: 70%;">
-          <button @click="loadIngredients(search_ingredient_name)" class="submit-content ml-2">Search</button>
-          <button v-if="search_ingredient_name" @click="clearSearch" class="submit-content ml-2">Clear</button>
-        </div>
-        <ul class="ingredient-list">
-          <li v-for="ingredient in ingredients" :key="ingredient.id" class="border p-2 mt-2">
-            <strong>{{ ingredient.name }}</strong> ({{ ingredient.unit || 'N/A' }})<br>
-            Calories/Unit: {{ ingredient.calories_per_unit || 'N/A' }}<br>
-            <span v-if="ingredient.description">{{ ingredient.description }}</span>
-          </li>
-          <li v-if="ingredients.length === 0">No ingredients found. Add some above!</li>
-        </ul>
       </div>
     </div>
-  </main>
+
+    <!-- Ingredient Addition Form -->
+    <div class="form-section">
+      <div class="card">
+        <h3>Add New Ingredient</h3>
+        <form @submit.prevent="submitIngredient" class="ingredient-form">
+          <div class="form-group">
+            <label for="ingredient-name">Name:</label>
+            <input id="ingredient-name" v-model="new_ingredient.name" type="text" required>
+          </div>
+          <div class="form-group">
+            <label for="ingredient-unit">Unit:</label>
+            <input id="ingredient-unit" v-model="new_ingredient.unit" type="text">
+          </div>
+          <div class="form-group">
+            <label for="ingredient-calories">Calories per Unit:</label>
+            <input id="ingredient-calories" v-model.number="new_ingredient.calories_per_unit" type="number">
+          </div>
+          <div class="form-group">
+            <label for="ingredient-description">Description:</label>
+            <textarea id="ingredient-description" v-model="new_ingredient.description" rows="4"></textarea>
+          </div>
+          <button type="submit" class="submit-content">Add Ingredient</button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -142,10 +185,6 @@ const { createApp } = Vue;
 createApp({
   data() {
     return {
-      new_post: "",
-      posts: [],
-      tags: [],
-      selected_tags: [],
       new_ingredient: {
         name: "",
         unit: "",
@@ -153,11 +192,6 @@ createApp({
         description: ""
       },
       ingredients: [],
-      search_ingredient_name: "",
-      // New recipe-related data
-      recipes: [],
-      showNewRecipeForm: false,
-      editingRecipe: null,
       currentRecipe: {
         name: "",
         description: "",
@@ -167,52 +201,10 @@ createApp({
     };
   },
   methods: {
-    formatDate(dateStr) {
-      const d = new Date(dateStr);
-      return d.toLocaleString();
-    },
-    async loadPosts() {
-      let tagParams = this.selected_tags.join(",");
-      let url = `/recipe_manager/api/posts` + (tagParams ? `?tags=${tagParams}` : "");
-      const r = await fetch(url);
-      const data = await r.json();
-      this.posts = data.posts;
-    },
-    async loadTags() {
-      const r = await fetch(`/recipe_manager/api/tags`);
-      const data = await r.json();
-      this.tags = data.tags;
-    },
-    async loadIngredients(search_term = '') {
-      let url = `/recipe_manager/api/ingredients`;
-      if (search_term) {
-        url += `?name=${encodeURIComponent(search_term)}`;
-      }
-      const r = await fetch(url);
+    async loadIngredients() {
+      const r = await fetch(`/recipe_manager/api/ingredients`);
       const data = await r.json();
       this.ingredients = data.ingredients;
-    },
-    async submitPost() {
-      if (!this.new_post.trim()) return;
-      await fetch(`/recipe_manager/api/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: this.new_post })
-      });
-      this.new_post = "";
-      await this.refresh();
-    },
-    async deletePost(id) {
-      await fetch(`/recipe_manager/api/posts/${id}`, { method: "DELETE" });
-      await this.refresh();
-    },
-    async toggleTag(tag) {
-      if (this.selected_tags.includes(tag)) {
-        this.selected_tags = this.selected_tags.filter(t => t !== tag);
-      } else {
-        this.selected_tags.push(tag);
-      }
-      await this.loadPosts();
     },
     async submitIngredient() {
       if (!this.new_ingredient.name.trim()) {
@@ -245,11 +237,6 @@ createApp({
         alert("An unexpected error occurred while adding the ingredient.");
       }
     },
-    async loadRecipes() {
-      const r = await fetch(`/recipe_manager/api/recipes`);
-      const data = await r.json();
-      this.recipes = data.recipes;
-    },
     addIngredient() {
       this.currentRecipe.ingredients.push({
         id: null,
@@ -259,87 +246,34 @@ createApp({
     removeIngredient(index) {
       this.currentRecipe.ingredients.splice(index, 1);
     },
-    editRecipe(recipe) {
-      this.editingRecipe = recipe;
-      this.currentRecipe = {
-        id: recipe.id,
-        name: recipe.name,
-        description: recipe.description,
-        instructions: recipe.instructions,
-        ingredients: recipe.ingredients.map(i => ({
-          id: i.ingredient_id,
-          quantity: i.quantity
-        }))
-      };
-    },
     async submitRecipe() {
       try {
-        const url = this.editingRecipe 
-          ? `/recipe_manager/api/recipes/${this.editingRecipe.id}`
-          : '/recipe_manager/api/recipes';
-        
-        const method = this.editingRecipe ? 'PUT' : 'POST';
-        
-        const r = await fetch(url, {
-          method: method,
+        const r = await fetch('/recipe_manager/api/recipes', {
+          method: 'POST',
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.currentRecipe)
         });
         
         if (r.ok) {
-          await this.loadRecipes();
-          this.cancelRecipeEdit();
+          alert("Recipe created successfully!");
+          // Clear the form
+          this.currentRecipe = {
+            name: "",
+            description: "",
+            instructions: "",
+            ingredients: []
+          };
         } else {
           const errorData = await r.json();
-          alert(`Error saving recipe: ${errorData.message || r.statusText}`);
+          alert(`Error creating recipe: ${errorData.message || r.statusText}`);
         }
       } catch (e) {
-        console.error("Error saving recipe:", e);
-        alert("An unexpected error occurred while saving the recipe.");
+        console.error("Error creating recipe:", e);
+        alert("An unexpected error occurred while creating the recipe.");
       }
-    },
-    async deleteRecipe(id) {
-      if (!confirm("Are you sure you want to delete this recipe?")) return;
-      
-      try {
-        const r = await fetch(`/recipe_manager/api/recipes/${id}`, {
-          method: 'DELETE'
-        });
-        
-        if (r.ok) {
-          await this.loadRecipes();
-        } else {
-          const errorData = await r.json();
-          alert(`Error deleting recipe: ${errorData.message || r.statusText}`);
-        }
-      } catch (e) {
-        console.error("Error deleting recipe:", e);
-        alert("An unexpected error occurred while deleting the recipe.");
-      }
-    },
-    cancelRecipeEdit() {
-      this.showNewRecipeForm = false;
-      this.editingRecipe = null;
-      this.currentRecipe = {
-        name: "",
-        description: "",
-        instructions: "",
-        ingredients: []
-      };
-    },
-    async clearSearch() {
-      this.search_ingredient_name = '';
-      await this.loadIngredients(); // Reload all ingredients
-    },
-    async refresh() {
-      await this.loadPosts();
-      await this.loadTags();
-      await this.loadIngredients();
-      await this.loadRecipes();
     }
   },
   mounted() {
-    this.loadRecipes();
     this.loadIngredients();
   }
 }).mount("#app");
