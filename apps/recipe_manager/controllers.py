@@ -25,11 +25,13 @@ session, db, T, auth, and templates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-import re
+import re, json, os, mimetypes
 
-from py4web import URL, abort, action, redirect, request
+from py4web import URL, abort, action, redirect, request, HTTP
 
 from .private.populate_recipes import import_recipes
+
+from . import settings
 
 from .common import (
     T,
@@ -142,7 +144,8 @@ def get_recipes():
                             if db.ingredients[link.ingredient_id] and db.ingredients[link.ingredient_id].calories_per_unit else None
                     }
                     for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
-                ]
+                ],
+                "image": recipe.image
             }
             for recipe in recipes
         ]
@@ -153,17 +156,31 @@ def get_recipes():
 @action("api/recipes", method=["POST"])
 @action.uses(db, auth.user)
 def create_recipe():
-    data = request.json
+    data = request.forms
+    files = request.files
+
     name = data.get("name")
     type_ = data.get("type", "")
     description = data.get("description")
     instructions = data.get("instructions")
-    ingredients = data.get("ingredients", [])
+    ingredientsJson = data.get("ingredients")
+
+    try:
+        ingredients = json.loads(ingredientsJson) if ingredientsJson else []
+    except json.JSONDecodeError:
+        abort(400, "Invalid JSON in ingredients field")
 
     if not name:
         abort(400, "Recipe name is required")
     if not type_:
         abort(400, "Recipe type is required")
+
+    # Image upload
+    image = files.get("image")
+    imageName = None
+    assert hasattr(image.file, 'read'), f"image.file is not a stream, got {type(image.file)}"
+    if image:
+        imageName = db.recipes.image.store(image.file, image.filename, path=settings.UPLOAD_FOLDER)
 
     # Create the recipe
     recipe_id = db.recipes.insert(
@@ -171,7 +188,8 @@ def create_recipe():
         type=type_,
         description=description,
         instructions=instructions,
-        author=auth.user_id
+        author=auth.user_id,
+        image = imageName
     )
 
     # Add ingredients

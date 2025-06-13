@@ -31,7 +31,7 @@ db.define_table(
     "recipes",
     Field("name", type="string", required=True),
     Field("type", type="string", default=""),
-    Field("image", "upload"),
+    Field("image", "upload", uploadfolder=settings.UPLOAD_FOLDER),
     Field("servings", type="integer", default=1),
     Field("description", type="text"),
     Field("instructions", type="text"),

@@ -237,6 +237,7 @@
   <div class="recipe-grid">
     <div v-for="recipe in recipes" :key="recipe.id" class="recipe-item">
       <h3>{{ recipe.name }}</h3>
+      <img v-if="recipe.image" :src="`/recipe_manager/download/${recipe.image}`" alt="Recipe Image" class="recipe-image">
       <p class="recipe-type">{{ recipe.type }}</p>
       <p class="recipe-description">{{ recipe.description }}</p>
       <div class="recipe-calories" v-if="recipe.total_calories">
