@@ -30,11 +30,15 @@ db.define_table(
 db.define_table(
     "recipes",
     Field("name", type="string", required=True),
+    Field("type", type="string", default=""),
+    Field("image", "upload"),
+    Field("servings", type="integer", default=1),
     Field("description", type="text"),
     Field("instructions", type="text"),
     Field("author", "reference auth_user"),
     Field("created_on", type="datetime", default=datetime.utcnow),
     Field("updated_on", type="datetime", update=datetime.utcnow)
+    
 )
 
 # Recipe-Ingredient link table
