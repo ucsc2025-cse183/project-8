@@ -51,7 +51,7 @@ def index():
 
 # GET /api/ingredients?name=x - search ingredients by name
 @action("api/ingredients", method=["GET"])
-@action.uses(db, auth.user)
+@action.uses(db)
 def get_ingredients():
     name_query = request.query.get("name")
 
