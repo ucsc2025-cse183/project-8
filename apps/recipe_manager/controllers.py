@@ -109,23 +109,37 @@ def add_ingredient():
 @action("api/recipes", method=["GET"])
 @action.uses(db, auth.user)
 def get_recipes():
-    recipes = db(db.recipes).select(orderby=~db.recipes.created_on)
-    
+    name_query = request.params.get("name", "").strip()
+    type_query = request.params.get("type", "").strip()
+    query = db.recipes.id > 0
+    if name_query:
+        query &= db.recipes.name.ilike(f"%{name_query}%")
+    if type_query:
+        query &= db.recipes.type == type_query
+    recipes = db(query).select(orderby=~db.recipes.created_on)
     return {
         "recipes": [
             {
                 "id": recipe.id,
                 "name": recipe.name,
+                "type": recipe.type,
                 "description": recipe.description,
                 "instructions": recipe.instructions,
                 "author": db.auth_user[recipe.author].username if db.auth_user[recipe.author] else "unknown",
                 "created_on": recipe.created_on,
                 "updated_on": recipe.updated_on,
+                "total_calories": sum(
+                    (link.quantity * db.ingredients[link.ingredient_id].calories_per_unit)
+                    for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
+                    if db.ingredients[link.ingredient_id] and db.ingredients[link.ingredient_id].calories_per_unit
+                ),
                 "ingredients": [
                     {
                         "ingredient_id": link.ingredient_id,
                         "quantity": link.quantity,
-                        "name": db.ingredients[link.ingredient_id].name if db.ingredients[link.ingredient_id] else "Unknown"
+                        "name": db.ingredients[link.ingredient_id].name if db.ingredients[link.ingredient_id] else "Unknown",
+                        "calories": (link.quantity * db.ingredients[link.ingredient_id].calories_per_unit) 
+                            if db.ingredients[link.ingredient_id] and db.ingredients[link.ingredient_id].calories_per_unit else None
                     }
                     for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
                 ]
@@ -141,16 +155,20 @@ def get_recipes():
 def create_recipe():
     data = request.json
     name = data.get("name")
+    type_ = data.get("type", "")
     description = data.get("description")
     instructions = data.get("instructions")
     ingredients = data.get("ingredients", [])
 
     if not name:
         abort(400, "Recipe name is required")
+    if not type_:
+        abort(400, "Recipe type is required")
 
     # Create the recipe
     recipe_id = db.recipes.insert(
         name=name,
+        type=type_,
         description=description,
         instructions=instructions,
         author=auth.user_id

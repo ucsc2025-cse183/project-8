@@ -201,3 +201,26 @@ CREATE TABLE "recipe_ingredients"(
     "quantity" DOUBLE
 );
 success!
+timestamp: 2025-06-13T12:40:55.089338
+ALTER TABLE "recipes" ADD "type" CHAR(512);
+timestamp: 2025-06-13T12:40:55.091361
+ALTER TABLE "recipes" ADD "image" CHAR(512);
+timestamp: 2025-06-13T12:40:55.091736
+ALTER TABLE "recipes" ADD "servings" INTEGER;
+success!
+timestamp: 2025-06-13T12:41:42.878929
+CREATE TABLE "ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "unit" CHAR(512),
+    "calories_per_unit" INTEGER,
+    "description" CHAR(512)
+);
+timestamp: 2025-06-13T12:41:57.021175
+CREATE TABLE "ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "unit" CHAR(512),
+    "calories_per_unit" INTEGER,
+    "description" CHAR(512)
+);
