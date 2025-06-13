@@ -192,23 +192,6 @@ def create_recipe():
     db.commit()
     return {"id": recipe_id, "message": "Recipe created successfully"}
 
-# image serving
-'''@action("uploads/<filename>")
-def serve_image(filename):
-    print("Serve image", filename)
-    if ".." in filename or filename.startswith("/"):
-        raise HTTP(400, "Invalid filename")
-    path = os.path.join(settings.UPLOAD_FOLDER, filename)
-    if not os.path.exists(path) or not os.path.isfile(path):
-        raise HTTP(404, "File not found")
-    mime_type, encoding = mimetypes.guess_type(path)
-    mime_type = mime_type or "application/octet-stream"
-    with open(path, "rb") as f:
-        fileData = f.read()
-        raise HTTP(200, body=fileData, headers={"Content-Type": mime_type})
-'''
-
-
 # PUT /api/recipes/<recipe_id> - update a recipe
 @action("api/recipes/<recipe_id:int>", method=["PUT"])
 @action.uses(db, auth.user)
