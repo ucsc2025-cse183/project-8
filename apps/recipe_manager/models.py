@@ -17,7 +17,6 @@ from . import settings
 # db.commit()
 #
 
-
 # Ingredient table
 db.define_table(
     "ingredients",
@@ -48,3 +47,6 @@ db.define_table(
 
 # always commit models
 db.commit()
+
+from .private.populate_recipes import import_recipes
+import_recipes(db)

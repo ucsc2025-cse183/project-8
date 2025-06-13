@@ -29,6 +29,8 @@ import re
 
 from py4web import URL, abort, action, redirect, request
 
+from .private.populate_recipes import import_recipes
+
 from .common import (
     T,
     auth,
@@ -46,78 +48,6 @@ from .common import (
 @action.uses("index.html", auth.user)
 def index():
     return {}
-
-
-# POST /api/posts - create a new post and store tags
-@action("api/posts", method=["POST"])
-@action.uses(db, auth.user)
-def create_post():
-    content = request.json.get("content")
-    if not content:
-        abort(400, "Missing content")
-
-    # insert content
-    post_id = db.post_item.insert(content=content)
-    db.commit()
-
-    # extract tags (without #)
-    tags = set(re.findall(r"#(\w+)", content))
-    for tag in tags:
-        db.tag_item.insert(name=tag.lower(), post_item_id=post_id)
-    db.commit()
-
-    return {"id": post_id}
-
-
-# GET /api/posts?tags=x,y,z - get posts filtered by tags
-@action("api/posts", method=["GET"])
-@action.uses(db, auth.user)
-def get_posts():
-    tag_query = request.query.get("tags")
-    user_id = auth.user_id
-
-    if tag_query:
-        tag_list = tag_query.split(",")
-        tag_rows = db(db.tag_item.name.belongs([t.lower() for t in tag_list])).select()
-        post_ids = list({row.post_item_id for row in tag_rows})
-        posts = db(db.post_item.id.belongs(post_ids)).select(orderby=~db.post_item.created_on, limitby=(0, 100))
-    else:
-        posts = db(db.post_item).select(orderby=~db.post_item.created_on, limitby=(0, 100))
-
-    return {
-        "posts": [
-            {
-                "id": post.id,
-                "content": post.content,
-                "created_on": post.created_on,
-                "created_by": db.auth_user[post.created_by].username if db.auth_user[post.created_by] else "unknown",
-                "can_delete": post.created_by == user_id,
-            }
-            for post in posts
-        ]
-    }
-
-
-# DELETE /api/posts/<post_id> - delete a post
-@action("api/posts/<post_id:int>", method=["DELETE"])
-@action.uses(db, auth.user)
-def delete_post(post_id):
-    post = db.post_item(post_id)
-    if not post or post.created_by != auth.user_id:
-        abort(403)
-    db(db.tag_item.post_item_id == post_id).delete()
-    db(db.post_item.id == post_id).delete()
-    return {"message": "Post deleted"}
-
-
-# GET /api/tags - return all unique known tags
-@action("api/tags", method=["GET"])
-@action.uses(db, auth.user)
-def get_tags():
-    tags = db(db.tag_item).select(db.tag_item.name, distinct=True)
-    tag_names = sorted(set(tag.name for tag in tags))
-    return {"tags": tag_names}
-
 
 # GET /api/ingredients?name=x - search ingredients by name
 @action("api/ingredients", method=["GET"])
@@ -322,3 +252,10 @@ def upload_recipe_image(recipe_id):
     db.commit()
 
     return {"message": "Image uploaded successfully.", "image_url": recipe.image}
+
+# populate database with TheMealDB API
+@action("populate_recipes")
+@action.uses(db)
+def populate_recipes_action():
+    import_recipes(db)
+    return "Recipes successfully imported from TheMealDB API."
