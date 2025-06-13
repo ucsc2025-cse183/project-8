@@ -254,7 +254,8 @@
         <h4>Ingredients:</h4>
         <ul>
           <li v-for="ingredient in recipe.ingredients" :key="ingredient.ingredient_id">
-            {{ ingredient.quantity }} {{ ingredient.name }}
+            <!--im trying to put in ingredient.unit here so that units display but its not showing-->
+            {{ ingredient.quantity }} {{ ingredient.unit }} {{ ingredient.name }}
             <span v-if="ingredient.calories">({{ ingredient.calories }} kcal)</span>
           </li>
         </ul>

@@ -178,7 +178,6 @@ def create_recipe():
     # Image upload
     image = files.get("image")
     imageName = None
-    assert hasattr(image.file, 'read'), f"image.file is not a stream, got {type(image.file)}"
     if image:
         imageName = db.recipes.image.store(image.file, image.filename, path=settings.UPLOAD_FOLDER)
 
