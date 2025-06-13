@@ -145,6 +145,10 @@
             </div>
             <button type="button" @click="addIngredient" class="submit-content">Add Ingredient</button>
           </div>
+          <div class="form-group">
+            <label for="recipe-image">Image:</label>
+            <input id="recipe-image" type="file" @change="onImageChange" accept="imaige/*">
+          </div>
           <button type="submit" class="submit-content">Save Recipe</button>
         </form>
       </div>
@@ -197,7 +201,8 @@ createApp({
         description: "",
         instructions: "",
         ingredients: []
-      }
+      },
+      recipeImage: null
     };
   },
   methods: {
@@ -248,10 +253,17 @@ createApp({
     },
     async submitRecipe() {
       try {
+        const formData = new FormData();
+        formData.append("name", this.currentRecipe.name);
+        formData.append("description", this.currentRecipe.description);
+        formData.append("instructions", this.currentRecipe.instructions);
+        formData.append("ingredients", JSON.stringify(this.currentRecipe.ingredients));
+        if(this.recipeImage){
+          formData.append("image", this.recipeImage)
+        }
         const r = await fetch('/recipe_manager/api/recipes', {
           method: 'POST',
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(this.currentRecipe)
+          body: formData
         });
         
         if (r.ok) {
@@ -263,13 +275,31 @@ createApp({
             instructions: "",
             ingredients: []
           };
+          this.recipeImage = null;
         } else {
-          const errorData = await r.json();
-          alert(`Error creating recipe: ${errorData.message || r.statusText}`);
+          let errorMessage = "Unknown error";
+          try {
+            const errorData = await r.json();
+            errorMessage = errorData.message || r.statusText;
+          } catch (jsonError){
+            const text = await r.text();
+            console.warn("Non-JSON error response:", text);
+            errorMessage = text || r.statusText;
+          }
+          alert(`Error creating recipe: ${errorMessage}`);
         }
       } catch (e) {
         console.error("Error creating recipe:", e);
         alert("An unexpected error occurred while creating the recipe.");
+      }
+    },
+    onImageChange(event){
+      const file = event.target.files[0];
+      if(file && file.type.startsWith("image/")){
+        this.recipeImage = file;
+      }
+      else{
+        alert("Please select a valid image file.");
       }
     }
   },

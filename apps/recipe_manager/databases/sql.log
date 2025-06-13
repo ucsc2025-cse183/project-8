@@ -201,3 +201,10 @@ CREATE TABLE "recipe_ingredients"(
     "quantity" DOUBLE
 );
 success!
+timestamp: 2025-06-13T00:12:05.172908
+ALTER TABLE "recipes" ADD "type" CHAR(512);
+timestamp: 2025-06-13T00:12:05.191566
+ALTER TABLE "recipes" ADD "image" CHAR(512);
+timestamp: 2025-06-13T00:12:05.200023
+ALTER TABLE "recipes" ADD "servings" INTEGER;
+success!

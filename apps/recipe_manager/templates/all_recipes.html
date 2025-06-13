@@ -48,6 +48,14 @@
   margin: 0 auto;
   padding: 20px;
 }
+
+.recipe-image {
+  max-width: 300px;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 </style>
 
 <div id="app" class="page-container">
@@ -57,6 +65,8 @@
       <div class="recipe-content">
         <h4>{{ recipe.name }}</h4>
         <p>{{ recipe.description }}</p>
+        <pre>{{ recipe.image }}</pre>
+        <img v-if="recipe.image" :src="recipe.image" alt="Recipe Image" class="recipe-image">
       </div>
       <div class="recipe-actions">
         <button @click="editRecipe(recipe)" class="submit-content">Edit</button>
@@ -89,6 +99,7 @@ createApp({
       const r = await fetch(`/recipe_manager/api/recipes`);
       const data = await r.json();
       this.recipes = data.recipes;
+      console.log("Recipe image path: ", data.recipes.image)
     },
     editRecipe(recipe) {
       this.editingRecipe = recipe;

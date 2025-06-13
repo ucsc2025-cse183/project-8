@@ -25,11 +25,13 @@ session, db, T, auth, and templates are examples of Fixtures.
 Warning: Fixtures MUST be declared with @action.uses({fixtures}) else your app will result in undefined behavior
 """
 
-import re
+import re, json, mimetypes, os
 
-from py4web import URL, abort, action, redirect, request
+from py4web import URL, abort, action, redirect, request, HTTP
 
 from .private.populate_recipes import import_recipes
+
+from . import settings
 
 from .common import (
     T,
@@ -42,6 +44,7 @@ from .common import (
     session,
     unauthenticated,
 )
+
 
 
 @action("index")
@@ -110,7 +113,6 @@ def add_ingredient():
 @action.uses(db, auth.user)
 def get_recipes():
     recipes = db(db.recipes).select(orderby=~db.recipes.created_on)
-    
     return {
         "recipes": [
             {
@@ -128,7 +130,8 @@ def get_recipes():
                         "name": db.ingredients[link.ingredient_id].name if db.ingredients[link.ingredient_id] else "Unknown"
                     }
                     for link in db(db.recipe_ingredients.recipe_id == recipe.id).select()
-                ]
+                ],
+                "image": recipe.image #URL("uploads", recipe.image) if recipe.image else None
             }
             for recipe in recipes
         ]
@@ -139,21 +142,39 @@ def get_recipes():
 @action("api/recipes", method=["POST"])
 @action.uses(db, auth.user)
 def create_recipe():
-    data = request.json
+    data = request.forms
+    files = request.files
+
     name = data.get("name")
     description = data.get("description")
     instructions = data.get("instructions")
-    ingredients = data.get("ingredients", [])
+    ingredientsJson = data.get("ingredients")
+
+    try:
+        ingredients = json.loads(ingredientsJson) if ingredientsJson else []
+    except json.JSONDecodeError:
+        abort(400, "Invalid JSON in ingredients field")
 
     if not name:
         abort(400, "Recipe name is required")
+
+    # Image upload
+    image = files.get("image")
+    imageName = None
+    print("image =", image)
+    print("image.filename =", getattr(image, "filename", None))
+    print("type(image.file) =", type(getattr(image, "file", None)))
+    assert hasattr(image.file, 'read'), f"image.file is not a stream, got {type(image.file)}"
+    if image:
+        imageName = db.recipes.image.store(image.file, image.filename, path=settings.UPLOAD_FOLDER)
 
     # Create the recipe
     recipe_id = db.recipes.insert(
         name=name,
         description=description,
         instructions=instructions,
-        author=auth.user_id
+        author=auth.user_id,
+        image=imageName
     )
 
     # Add ingredients
@@ -170,6 +191,21 @@ def create_recipe():
 
     db.commit()
     return {"id": recipe_id, "message": "Recipe created successfully"}
+
+# image serving
+@action("uploads/<filename>")
+def serve_image(filename):
+    print("Serve image", filename)
+    if ".." in filename or filename.startswith("/"):
+        raise HTTP(400, "Invalid filename")
+    path = os.path.join(settings.UPLOAD_FOLDER, filename)
+    if not os.path.exists(path) or not os.path.isfile(path):
+        raise HTTP(404, "File not found")
+    mime_type, encoding = mimetypes.guess_type(path)
+    mime_type = mime_type or "application/octet-stream"
+    with open(path, "rb") as f:
+        fileData = f.read()
+        raise HTTP(200, body=fileData, headers={"Content-Type": mime_type})
 
 
 # PUT /api/recipes/<recipe_id> - update a recipe
