@@ -304,3 +304,9 @@ def all_recipes():
 @action.uses("all_ingredients.html", auth.user)
 def all_ingredients():
     return {}
+
+@action("api/current_user", method=["GET"])
+@action.uses(auth.user)
+def get_current_user():
+    user = auth.get_user()
+    return {"username": user.get("username") if user else None}
