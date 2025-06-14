@@ -16,6 +16,9 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
 .recipe-calories {
@@ -79,10 +82,14 @@
   background: #4CAF50;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 12px 16px;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .edit-button:hover {
@@ -106,6 +113,7 @@
   gap: 0.5rem;
   justify-content: flex-end;
   padding-top: 1rem;
+  border-top: 1px solid #eee;
 }
 
 .page-container {
@@ -223,10 +231,78 @@
     margin-bottom: 0.5rem;
   }
 }
+
+.modal-button {
+  padding: 12px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Ensure specific colors for modal buttons */
+.modal-button.add-ingredient-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.modal-button.cancel-btn {
+  background: #666;
+  color: white;
+}
+
+.modal-button.save-changes-btn {
+  background: #4CAF50;
+  color: white;
+}
 </style>
 
 <div id="app" class="page-container">
   <h2>All Recipes</h2>
+  <!-- Edit Recipe Modal -->
+  <div v-if="editingRecipe" class="modal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="modal-content" style="background: white; margin: 50px auto; padding: 20px; width: 80%; max-width: 600px; border-radius: 8px; position: relative;">
+      <h3>Edit Recipe</h3>
+      <form @submit.prevent="updateRecipe">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Name:</label>
+          <input v-model="currentRecipe.name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Type:</label>
+          <select v-model="currentRecipe.type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <option v-for="type in recipeTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Description:</label>
+          <textarea v-model="currentRecipe.description" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Instructions:</label>
+          <textarea v-model="currentRecipe.instructions" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 150px;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Ingredients:</label>
+          <div v-for="(ingredient, index) in currentRecipe.ingredients" :key="index" style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input v-model="ingredient.quantity" type="number" step="0.1" required style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Quantity">
+            <select v-model="ingredient.id" required style="flex-grow: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option v-for="ing in availableIngredients" :key="ing.id" :value="ing.id">{{ ing.name }}</option>
+            </select>
+            <button type="button" @click="removeIngredient(index)" class="modal-button danger">Remove</button>
+          </div>
+          <button type="button" @click="addIngredient" class="modal-button add-ingredient-btn">Add Ingredient</button>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" @click="cancelEdit" class="modal-button cancel-btn">Cancel</button>
+          <button type="submit" class="modal-button save-changes-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <div class="search-container">
     <div class="search-bar-row">
       <input v-model="searchName" placeholder="Search recipes by name...">
@@ -243,26 +319,30 @@
   </div>
   <div class="recipe-grid">
     <div v-for="recipe in recipes" :key="recipe.id" class="recipe-item">
-      <h3>{{ recipe.name }}</h3>
-      <img v-if="recipe.image" :src="`/recipe_manager/download/${recipe.image}`" alt="Recipe Image" class="recipe-image">
-      <p class="recipe-type">{{ recipe.type }}</p>
-      <p class="recipe-description">{{ recipe.description }}</p>
-      <div class="recipe-calories" v-if="recipe.total_calories">
-        Total Calories: {{ recipe.total_calories }} kcal
+      <div class="recipe-content">
+        <h3>{{ recipe.name }}</h3>
+        <img v-if="recipe.image" :src="`/recipe_manager/download/${recipe.image}`" alt="Recipe Image" class="recipe-image">
+        <p class="recipe-type">{{ recipe.type }}</p>
+        <p class="recipe-description">{{ recipe.description }}</p>
+        <div class="recipe-calories" v-if="recipe.total_calories">
+          <strong>Total Calories:</strong> {{ recipe.total_calories }} kcal
+        </div>
+        <div class="recipe-ingredients">
+          <h4>Ingredients:</h4>
+          <ul>
+            <li v-for="ingredient in recipe.ingredients" :key="ingredient.ingredient_id">
+              {{ ingredient.quantity }} {{ ingredient.unit }} {{ ingredient.name }}
+              <span v-if="ingredient.calories">({{ ingredient.calories }} kcal)</span>
+            </li>
+          </ul>
+        </div>
+        <p class="recipe-instructions">{{ recipe.instructions }}</p>
+        <p class="recipe-author">By: {{ recipe.author }}</p>
       </div>
-      <div class="recipe-ingredients">
-        <h4>Ingredients:</h4>
-        <ul>
-          <li v-for="ingredient in recipe.ingredients" :key="ingredient.ingredient_id">
-            <!--im trying to put in ingredient.unit here so that units display but its not showing-->
-            {{ ingredient.quantity }} {{ ingredient.unit }} {{ ingredient.name }}
-            <span v-if="ingredient.calories">({{ ingredient.calories }} kcal)</span>
-          </li>
-        </ul>
+      <div class="recipe-actions">
+        <button v-if="recipe.author === currentUser" @click="editRecipe(recipe)" class="edit-button">Edit Recipe</button>
+        <button v-if="recipe.author === currentUser" @click="deleteRecipe(recipe.id)" class="edit-button danger">Delete Recipe</button>
       </div>
-      <p class="recipe-instructions">{{ recipe.instructions }}</p>
-      <p class="recipe-author">By: {{ recipe.author }}</p>
-      <button v-if="recipe.author === currentUser" @click="editRecipe(recipe)" class="edit-button">Edit Recipe</button>
     </div>
     <div v-if="recipes.length === 0" class="recipe-item">No recipes yet. Create your first recipe!</div>
   </div>
@@ -279,13 +359,16 @@ createApp({
       editingRecipe: null,
       currentRecipe: {
         name: "",
+        type: "",
         description: "",
         instructions: "",
         ingredients: []
       },
+      availableIngredients: [],
       searchName: "",
       searchType: "",
-      recipeTypes: ["Breakfast", "Lunch", "Dinner", "Dessert"]
+      recipeTypes: ["Breakfast", "Lunch", "Dinner", "Dessert"],
+      currentUser: null
     };
   },
   methods: {
@@ -298,10 +381,31 @@ createApp({
       const r = await fetch(`/recipe_manager/api/recipes${query}`);
       const data = await r.json();
       this.recipes = data.recipes;
+      console.log('Recipes loaded:', this.recipes);
+      console.log('Current user:', this.currentUser);
       // Populate recipeTypes from recipes if not already set
       if (this.recipeTypes.length === 0) {
         const types = new Set(data.recipes.map(r => r.type).filter(Boolean));
         this.recipeTypes = Array.from(types);
+      }
+    },
+    async loadCurrentUser() {
+      try {
+        const response = await fetch('/recipe_manager/api/current_user');
+        const data = await response.json();
+        this.currentUser = data.username;
+        console.log('Current user loaded:', this.currentUser);
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    },
+    async loadIngredients() {
+      try {
+        const response = await fetch('/recipe_manager/api/ingredients');
+        const data = await response.json();
+        this.availableIngredients = data.ingredients;
+      } catch (error) {
+        console.error('Error loading ingredients:', error);
       }
     },
     searchRecipes() {
@@ -312,11 +416,53 @@ createApp({
       this.searchType = "";
       this.loadRecipes();
     },
+    addIngredient() {
+      this.currentRecipe.ingredients.push({
+        quantity: 1,
+        id: this.availableIngredients[0]?.id
+      });
+    },
+    removeIngredient(index) {
+      this.currentRecipe.ingredients.splice(index, 1);
+    },
+    cancelEdit() {
+      this.editingRecipe = null;
+      this.currentRecipe = {
+        name: "",
+        type: "",
+        description: "",
+        instructions: "",
+        ingredients: []
+      };
+    },
+    async updateRecipe() {
+      try {
+        const response = await fetch(`/recipe_manager/api/recipes/${this.currentRecipe.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.currentRecipe)
+        });
+        
+        if (response.ok) {
+          await this.loadRecipes();
+          this.cancelEdit();
+        } else {
+          const errorData = await response.json();
+          alert(`Error updating recipe: ${errorData.message || response.statusText}`);
+        }
+      } catch (error) {
+        console.error('Error updating recipe:', error);
+        alert('An unexpected error occurred while updating the recipe.');
+      }
+    },
     editRecipe(recipe) {
       this.editingRecipe = recipe;
       this.currentRecipe = {
         id: recipe.id,
         name: recipe.name,
+        type: recipe.type,
         description: recipe.description,
         instructions: recipe.instructions,
         ingredients: recipe.ingredients.map(i => ({
@@ -344,7 +490,9 @@ createApp({
     }
   },
   mounted() {
+    this.loadCurrentUser();
     this.loadRecipes();
+    this.loadIngredients();
   }
 }).mount("#app");
 </script> 

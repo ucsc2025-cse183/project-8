@@ -121,22 +121,25 @@
     }
 
     .delete-ingredient-btn {
-      background: #1976d2;
-      color: #fff;
+      background: #337ab7 !important;
+      color: #fff !important;
       border: none;
       border-radius: 4px;
-      padding: 6px 12px;
+      padding: 12px 16px;
       cursor: pointer;
       margin-left: 8px;
       font-size: 0.95em;
       display: flex;
       align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      box-sizing: border-box;
       gap: 4px;
       transition: background 0.2s;
     }
 
     .delete-ingredient-btn:hover {
-      background: #1565c0;
+      background: #286090 !important;
     }
 
     .add-ingredient-btn {
@@ -152,13 +155,10 @@
       transition: background 0.2s;
       box-shadow: 0 2px 4px rgba(0,0,0,0.04);
       letter-spacing: 0.5px;
-      display: block;
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .add-ingredient-btn:hover {

@@ -173,6 +173,8 @@ CREATE TABLE "recipe_ingredients"(
     "quantity" DOUBLE
 );
 success!
+<<<<<<< Updated upstream:apps/tagged_posts/databases/sql.log
+=======
 timestamp: 2025-06-09T16:14:34.322495
 CREATE TABLE "ingredients"(
     "id" INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -224,3 +226,6 @@ CREATE TABLE "ingredients"(
     "calories_per_unit" INTEGER,
     "description" CHAR(512)
 );
+success!
+success!
+>>>>>>> Stashed changes:apps/recipe_manager/databases/sql.log
