@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="[[=URL('static')]]/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAA=="/>
+    <link rel="stylesheet" href="css/no.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <style>
+    .py4web-validation-error{margin-top:-16px; font-size:0.8em;color:red;}
+    .grid-table-wrapper{overflow-x: auto;}
+    </style>
+
+    <style>
+    :root {
+      --primary-color: #1565c0;
+      --accent-color: #ffd600;
+      --accent-hover: #ffea00;
+      --border-color: #e0e0e0;
+      --background-light: #eaf4fb;
+      --text-primary: #222;
+      --text-secondary: #666;
+      --radius-md: 8px;
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    }
+  </style>
+
+
+  <style>
+    nav.main-navbar {
+      background-color: var(--primary-color) !important;
+    }
+    nav.navbar .navbar-item,
+    nav.navbar .navbar-brand a,
+    nav.navbar .navbar-menu a {
+      color: rgb(23, 8, 233) !important;
+    }
+
+    /* User menu dropdown styles */
+    .navbar-user ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .navbar-user > ul > li {
+      position: relative;
+    }
+
+    .navbar-user > ul > li > ul {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      min-width: 200px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 0.5rem 0;
+      z-index: 1000;
+    }
+
+    .navbar-user > ul > li:hover > ul {
+      display: block;
+    }
+
+    .navbar-user > ul > li > ul > li {
+      display: block;
+      width: 100%;
+    }
+
+    .navbar-user > ul > li > ul > li > a {
+      display: block;
+      padding: 0.75rem 1rem;
+      color: var(--text-primary) !important;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .navbar-user > ul > li > ul > li > a:hover {
+      background-color: var(--background-light);
+      color: var(--primary-color) !important;
+    }
+  </style>
+
+  <style>
+    body {
+      background: transparent
+                  url('[[=URL("static","images","kitchen.png")]]')
+                  no-repeat   
+                  center center
+                  fixed    
+                  !important;
+      background-size: cover !important; 
+    }
+  </style>
+
+  <style>
+    form[action*="/auth/login"],
+    form[action*="/auth/register"],
+    form[action*="/auth/change_password"],
+    form[action*="/auth/profile"] {
+      background: #fff !important;
+      padding: 2rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      width: 500px !important;
+      height: 730px !important;  
+      max-width: none !important;  
+      margin: 2rem auto;
+    }
+  </style>
+
+  <style>
+    main {
+      transform: scale(0.70);
+      transform-origin: top center;
+    }
+  </style>
+
+  <style>
+    nav.main-navbar {
+      background-color: var(--primary-color) !important;
+    }
+    nav.main-navbar .navbar-title {
+      color: #ffd600 !important;
+    }
+  </style>
+
+  <style>
+    footer.black {
+      background-color: var(--primary-color) !important;
+      color: rgb(42, 39, 227) !important;                      
+    }
+    footer.black p {
+      color: #fff; 
+    }
+  </style>
+
+  <style>
+    .footer-mascot {
+      display: block;         
+      margin: 0 auto 0.5rem;     
+      width: 150px;             
+      height: auto;       
+    }
+  </style>
+
+    [[block page_head]]<!-- individual pages can customize header here -->[[end]]
+  </head>
+  <body>
+    <header>
+      <!-- Modern Navigation bar -->
+      <nav class="main-navbar">
+        <!-- Logo and Site Title -->
+        <div class="navbar-left">
+          <a href="[[=URL('index')]]" class="navbar-logo-link">
+            <img src="images/banchan.png" alt="Site Logo" class="navbar-logo">
+            <span class="navbar-title">The Bananaboat Cookbook</span>
+          </a>
+        </div>
+        <!-- Navigation Links -->
+        <ul class="navbar-links"> 
+          <li><a href="[[=URL('index')]]" class="navbar-link is-primary">Home</a></li>
+          <li><a href="[[=URL('all_recipes')]]" class="navbar-link is-primary">All Recipes</a></li>
+          <li><a href="[[=URL('all_ingredients')]]" class="navbar-link is-primary">All Ingredients</a></li>
+        </ul>
+        <!-- User Info (right) -->
+        <div class="navbar-user">
+          <ul>
+            [[if globals().get('user'):]]
+            <li>
+              <a class="navbar-link is-primary">
+                [[=globals().get('user',{}).get('email')]]
+              </a>
+              <ul>
+                <li><a href="[[=URL('auth/profile')]]">Edit Profile</a></li>
+                <li><a href="[[=URL('auth/change_password')]]">Change Password</a></li>
+                <li><a href="[[=URL('auth/logout')]]">Logout</a></li>
+              </ul>
+            </li>
+            [[else:]]
+            <li>
+              Login
+              <ul>
+                <li><a href="[[=URL('auth/register')]]">Sign up</a></li>
+                <li><a href="[[=URL('auth/login')]]">Log in</a></li>
+              </ul>
+            </li>
+            [[pass]]
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <!-- beginning of HTML inserted by extending template -->
+    <center>
+      <div>
+        <!-- Flash alert messages, first optional one in data-alert -->
+        <flash-alerts class="padded" data-alert="[[=globals().get('flash','')]]"></flash-alerts>
+      </div>
+      <main class="padded">
+        <!-- contect injected by extending page -->
+        [[include]]
+      </main>
+    </center>
+    <!-- end of HTML inserted by extending template -->
+    <footer class="black padded">
+    <img
+      src="images/mascot.png"
+      alt="Site Mascot"
+      class="footer-mascot"
+    >
+      <p>
+         
+      </p>
+    </footer>
+  </body>
+  <!-- You've gotta have utils.js -->
+  <script src="js/utils.js"></script>
+  [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
+</html>
