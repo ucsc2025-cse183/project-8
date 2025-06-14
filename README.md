@@ -19,4 +19,4 @@ The Bananaboat Cookbook is a web-based recipe manager application built with [py
 
 ## How To Use
 
-Please refer to the app documentation, `docu_versionX.pdf`, for start-up and usage instructions.
+Please refer to the app documentation, `Recipe_Manager.pdf`, for start-up and usage instructions.
