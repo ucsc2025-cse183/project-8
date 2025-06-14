@@ -179,7 +179,20 @@ def add_ingredient():
 @action("api/recipes", method=["GET"])
 @action.uses(db, auth.user)
 def get_recipes():
+<<<<<<< Updated upstream:apps/tagged_posts/controllers.py
     recipes = db(db.recipes).select(orderby=~db.recipes.created_on)
+=======
+    name_query = request.params.get("name", "").strip()
+    type_query = request.params.get("type", "").strip()
+    query = db.recipes.id > 0
+    if name_query:
+        query &= db.recipes.name.ilike(f"%{name_query}%")
+    if type_query:
+        query &= db.recipes.type == type_query
+    recipes = db(query).select(orderby=~db.recipes.created_on)
+    
+    print("Current auth user:", auth.user)
+>>>>>>> Stashed changes:apps/recipe_manager/controllers.py
     
     return {
         "recipes": [
@@ -322,3 +335,37 @@ def upload_recipe_image(recipe_id):
     db.commit()
 
     return {"message": "Image uploaded successfully.", "image_url": recipe.image}
+<<<<<<< Updated upstream:apps/tagged_posts/controllers.py
+=======
+
+# populate database with TheMealDB API
+@action("populate_recipes")
+@action.uses(db)
+def populate_recipes_action():
+    import_recipes(db)
+    return "Recipes successfully imported from TheMealDB API."
+
+@action("all_recipes")
+@action.uses("all_recipes.html", auth.user)
+def all_recipes():
+    return {}
+
+@action("all_ingredients")
+@action.uses("all_ingredients.html", auth.user)
+def all_ingredients():
+    return {}
+
+# GET /api/current_user - get current user information
+@action("api/current_user", method=["GET"])
+@action.uses(auth.user)
+def get_current_user():
+    # Debug logging
+    print("Current user in get_current_user:", auth.user)
+    if not auth.user:
+        return {"username": None}
+    user = db.auth_user[auth.user_id]
+    return {
+        "username": user.username if user else None,
+        "email": user.email if user else None
+    }
+>>>>>>> Stashed changes:apps/recipe_manager/controllers.py

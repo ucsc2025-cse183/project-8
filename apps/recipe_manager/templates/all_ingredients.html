@@ -1,0 +1,154 @@
+[[extend 'layout.html']]
+
+<style>
+.ingredient-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ingredient-item {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 0;
+  border: 1.5px solid var(--accent-color);
+  transition: all 0.2s ease;
+  min-height: 150px; /* Ensure minimum height */
+}
+
+.ingredient-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.ingredient-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.ingredient-details {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.search-container {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 1.5rem;
+}
+
+.search-ingredients {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-ingredients input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1.5px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+
+.search-ingredients button {
+  white-space: nowrap;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.submit-content {
+  background: white;
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: 44px;
+  line-height: 1;
+}
+
+.submit-content:hover {
+  background: var(--primary-color);
+  color: white;
+}
+</style>
+
+<div id="app" class="page-container">
+  <h2>All Ingredients</h2>
+  <div class="search-container">
+    <div class="search-ingredients">
+      <input v-model="search_ingredient_name" placeholder="Search ingredients by name..." style="width: 70%;">
+      <button @click="loadIngredients(search_ingredient_name)" class="submit-content ml-2">Search</button>
+      <button v-if="search_ingredient_name" @click="clearSearch" class="submit-content ml-2">Clear</button>
+    </div>
+  </div>
+  <div class="ingredient-grid">
+    <div v-for="ingredient in ingredients" :key="ingredient.id" class="ingredient-item">
+      <div class="ingredient-name">{{ ingredient.name }}</div>
+      <div class="ingredient-details">
+        <div>Unit: {{ ingredient.unit || 'N/A' }}</div>
+        <div>Calories/Unit: {{ ingredient.calories_per_unit || 'N/A' }}</div>
+        <div v-if="ingredient.description">{{ ingredient.description }}</div>
+      </div>
+    </div>
+    <div v-if="ingredients.length === 0" class="ingredient-item">No ingredients found. Add some from the homepage!</div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      ingredients: [],
+      search_ingredient_name: ""
+    };
+  },
+  methods: {
+    async loadIngredients(search_term = '') {
+      let url = `/recipe_manager/api/ingredients`;
+      if (search_term) {
+        url += `?name=${encodeURIComponent(search_term)}`;
+      }
+      const r = await fetch(url);
+      const data = await r.json();
+      this.ingredients = data.ingredients;
+    },
+    async clearSearch() {
+      this.search_ingredient_name = '';
+      await this.loadIngredients();
+    }
+  },
+  mounted() {
+    this.loadIngredients();
+  }
+}).mount("#app");
+</script> 

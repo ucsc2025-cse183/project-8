@@ -1,0 +1,498 @@
+[[extend 'layout.html']]
+
+<style>
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.recipe-item {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.recipe-calories {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  color: #2c3e50;
+}
+
+.recipe-ingredients {
+  margin: 15px 0;
+}
+
+.recipe-ingredients ul {
+  list-style: none;
+  padding: 0;
+}
+
+.recipe-ingredients li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.recipe-ingredients li span {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 5px;
+}
+
+.recipe-type {
+  color: #666;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.recipe-description {
+  margin: 10px 0;
+  color: #2c3e50;
+}
+
+.recipe-instructions {
+  margin: 15px 0;
+  white-space: pre-line;
+}
+
+.recipe-author {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 10px;
+}
+
+.recipe-image {
+  max-width: 300px;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.edit-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.edit-button:hover {
+  background: #45a049;
+}
+
+.recipe-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color);
+}
+
+.recipe-content {
+  flex-grow: 1;
+  margin-bottom: 1rem;
+}
+
+.recipe-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.search-container {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto 1.5rem;
+}
+
+.search-bar-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.search-bar-row input {
+  flex: 3;
+  padding: 0.75rem;
+  border: 1.5px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  min-width: 200px;
+  height: 38px;
+  box-sizing: border-box;
+}
+
+.search-bar-row select {
+  flex: 0 0 140px;
+  padding: 0.4rem 0.75rem;
+  border: 1.5px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  height: 38px;
+  max-width: 140px;
+  box-sizing: border-box;
+}
+
+.search-bar-row button.submit-content.ml-2 {
+  background: #1565c0 !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: bold;
+  border-radius: 6px !important;
+  padding: 0.5rem 1.2rem !important;
+  font-size: 1rem !important;
+  box-shadow: none;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.search-bar-row button.submit-content.ml-2:hover {
+  background: #003c8f !important;
+  color: #fff !important;
+}
+
+.submit-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  min-width: 90px;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-right: 0;
+  white-space: nowrap;
+}
+
+.danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.danger:hover {
+  background-color: #c82333;
+}
+
+.search-container button {
+  background: #fff !important;
+  color: #1565c0 !important;
+  border: 1.5px solid #1565c0 !important;
+  font-weight: bold;
+}
+.search-container button:hover {
+  background: #1565c0 !important;
+  color: #fff !important;
+}
+
+@media (max-width: 600px) {
+  .search-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .search-recipes,
+  .recipe-type-filter {
+    width: 100%;
+  }
+  .submit-content {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.modal-button {
+  padding: 12px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Ensure specific colors for modal buttons */
+.modal-button.add-ingredient-btn {
+  background: #4CAF50;
+  color: white;
+}
+
+.modal-button.cancel-btn {
+  background: #666;
+  color: white;
+}
+
+.modal-button.save-changes-btn {
+  background: #4CAF50;
+  color: white;
+}
+</style>
+
+<div id="app" class="page-container">
+  <h2>All Recipes</h2>
+  <!-- Edit Recipe Modal -->
+  <div v-if="editingRecipe" class="modal" style="display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div class="modal-content" style="background: white; margin: 50px auto; padding: 20px; width: 80%; max-width: 600px; border-radius: 8px; position: relative;">
+      <h3>Edit Recipe</h3>
+      <form @submit.prevent="updateRecipe">
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Name:</label>
+          <input v-model="currentRecipe.name" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Type:</label>
+          <select v-model="currentRecipe.type" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <option v-for="type in recipeTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Description:</label>
+          <textarea v-model="currentRecipe.description" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Instructions:</label>
+          <textarea v-model="currentRecipe.instructions" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 150px;"></textarea>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <label style="display: block; margin-bottom: 5px;">Ingredients:</label>
+          <div v-for="(ingredient, index) in currentRecipe.ingredients" :key="index" style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input v-model="ingredient.quantity" type="number" step="0.1" required style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Quantity">
+            <select v-model="ingredient.id" required style="flex-grow: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option v-for="ing in availableIngredients" :key="ing.id" :value="ing.id">{{ ing.name }}</option>
+            </select>
+            <button type="button" @click="removeIngredient(index)" class="modal-button danger">Remove</button>
+          </div>
+          <button type="button" @click="addIngredient" class="modal-button add-ingredient-btn">Add Ingredient</button>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" @click="cancelEdit" class="modal-button cancel-btn">Cancel</button>
+          <button type="submit" class="modal-button save-changes-btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="search-container">
+    <div class="search-bar-row">
+      <input v-model="searchName" placeholder="Search recipes by name...">
+      <select v-model="searchType">
+        <option value="">All Types</option>
+        <option value="Breakfast">Breakfast</option>
+        <option value="Lunch">Lunch</option>
+        <option value="Dinner">Dinner</option>
+        <option value="Dessert">Dessert</option>
+      </select>
+      <button @click="searchRecipes" class="submit-content ml-2">Search</button>
+      <button v-if="searchName || searchType" @click="clearSearch" class="submit-content ml-2" style="background:#fff;color:#1565c0;border:1.5px solid #1565c0;">Clear</button>
+    </div>
+  </div>
+  <div class="recipe-grid">
+    <div v-for="recipe in recipes" :key="recipe.id" class="recipe-item">
+      <div class="recipe-content">
+        <h3>{{ recipe.name }}</h3>
+        <img v-if="recipe.image" :src="`/recipe_manager/download/${recipe.image}`" alt="Recipe Image" class="recipe-image">
+        <p class="recipe-type">{{ recipe.type }}</p>
+        <p class="recipe-description">{{ recipe.description }}</p>
+        <div class="recipe-calories" v-if="recipe.total_calories">
+          <strong>Total Calories:</strong> {{ recipe.total_calories }} kcal
+        </div>
+        <div class="recipe-ingredients">
+          <h4>Ingredients:</h4>
+          <ul>
+            <li v-for="ingredient in recipe.ingredients" :key="ingredient.ingredient_id">
+              {{ ingredient.quantity }} {{ ingredient.unit }} {{ ingredient.name }}
+              <span v-if="ingredient.calories">({{ ingredient.calories }} kcal)</span>
+            </li>
+          </ul>
+        </div>
+        <p class="recipe-instructions">{{ recipe.instructions }}</p>
+        <p class="recipe-author">By: {{ recipe.author }}</p>
+      </div>
+      <div class="recipe-actions">
+        <button v-if="recipe.author === currentUser" @click="editRecipe(recipe)" class="edit-button">Edit Recipe</button>
+        <button v-if="recipe.author === currentUser" @click="deleteRecipe(recipe.id)" class="edit-button danger">Delete Recipe</button>
+      </div>
+    </div>
+    <div v-if="recipes.length === 0" class="recipe-item">No recipes yet. Create your first recipe!</div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+const { createApp } = Vue;
+
+createApp({
+  data() {
+    return {
+      recipes: [],
+      editingRecipe: null,
+      currentRecipe: {
+        name: "",
+        type: "",
+        description: "",
+        instructions: "",
+        ingredients: []
+      },
+      availableIngredients: [],
+      searchName: "",
+      searchType: "",
+      recipeTypes: ["Breakfast", "Lunch", "Dinner", "Dessert"],
+      currentUser: null
+    };
+  },
+  methods: {
+    async loadRecipes() {
+      // Build query params
+      let params = [];
+      if (this.searchName) params.push(`name=${encodeURIComponent(this.searchName)}`);
+      if (this.searchType) params.push(`type=${encodeURIComponent(this.searchType)}`);
+      const query = params.length ? `?${params.join('&')}` : '';
+      const r = await fetch(`/recipe_manager/api/recipes${query}`);
+      const data = await r.json();
+      this.recipes = data.recipes;
+      console.log('Recipes loaded:', this.recipes);
+      console.log('Current user:', this.currentUser);
+      // Populate recipeTypes from recipes if not already set
+      if (this.recipeTypes.length === 0) {
+        const types = new Set(data.recipes.map(r => r.type).filter(Boolean));
+        this.recipeTypes = Array.from(types);
+      }
+    },
+    async loadCurrentUser() {
+      try {
+        const response = await fetch('/recipe_manager/api/current_user');
+        const data = await response.json();
+        this.currentUser = data.username;
+        console.log('Current user loaded:', this.currentUser);
+      } catch (error) {
+        console.error('Error loading current user:', error);
+      }
+    },
+    async loadIngredients() {
+      try {
+        const response = await fetch('/recipe_manager/api/ingredients');
+        const data = await response.json();
+        this.availableIngredients = data.ingredients;
+      } catch (error) {
+        console.error('Error loading ingredients:', error);
+      }
+    },
+    searchRecipes() {
+      this.loadRecipes();
+    },
+    clearSearch() {
+      this.searchName = "";
+      this.searchType = "";
+      this.loadRecipes();
+    },
+    addIngredient() {
+      this.currentRecipe.ingredients.push({
+        quantity: 1,
+        id: this.availableIngredients[0]?.id
+      });
+    },
+    removeIngredient(index) {
+      this.currentRecipe.ingredients.splice(index, 1);
+    },
+    cancelEdit() {
+      this.editingRecipe = null;
+      this.currentRecipe = {
+        name: "",
+        type: "",
+        description: "",
+        instructions: "",
+        ingredients: []
+      };
+    },
+    async updateRecipe() {
+      try {
+        const response = await fetch(`/recipe_manager/api/recipes/${this.currentRecipe.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.currentRecipe)
+        });
+        
+        if (response.ok) {
+          await this.loadRecipes();
+          this.cancelEdit();
+        } else {
+          const errorData = await response.json();
+          alert(`Error updating recipe: ${errorData.message || response.statusText}`);
+        }
+      } catch (error) {
+        console.error('Error updating recipe:', error);
+        alert('An unexpected error occurred while updating the recipe.');
+      }
+    },
+    editRecipe(recipe) {
+      this.editingRecipe = recipe;
+      this.currentRecipe = {
+        id: recipe.id,
+        name: recipe.name,
+        type: recipe.type,
+        description: recipe.description,
+        instructions: recipe.instructions,
+        ingredients: recipe.ingredients.map(i => ({
+          id: i.ingredient_id,
+          quantity: i.quantity
+        }))
+      };
+    },
+    async deleteRecipe(id) {
+      if (!confirm("Are you sure you want to delete this recipe?")) return;
+      try {
+        const r = await fetch(`/recipe_manager/api/recipes/${id}`, {
+          method: 'DELETE'
+        });
+        if (r.ok) {
+          await this.loadRecipes();
+        } else {
+          const errorData = await r.json();
+          alert(`Error deleting recipe: ${errorData.message || r.statusText}`);
+        }
+      } catch (e) {
+        console.error("Error deleting recipe:", e);
+        alert("An unexpected error occurred while deleting the recipe.");
+      }
+    }
+  },
+  mounted() {
+    this.loadCurrentUser();
+    this.loadRecipes();
+    this.loadIngredients();
+  }
+}).mount("#app");
+</script> 

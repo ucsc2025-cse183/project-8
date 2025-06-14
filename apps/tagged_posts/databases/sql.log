@@ -173,3 +173,59 @@ CREATE TABLE "recipe_ingredients"(
     "quantity" DOUBLE
 );
 success!
+<<<<<<< Updated upstream:apps/tagged_posts/databases/sql.log
+=======
+timestamp: 2025-06-09T16:14:34.322495
+CREATE TABLE "ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "unit" CHAR(512),
+    "calories_per_unit" INTEGER,
+    "description" CHAR(512)
+);
+success!
+timestamp: 2025-06-09T16:14:34.325833
+CREATE TABLE "recipes"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "description" TEXT,
+    "instructions" TEXT,
+    "author" INTEGER REFERENCES "auth_user" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "created_on" TIMESTAMP,
+    "updated_on" TIMESTAMP
+);
+success!
+timestamp: 2025-06-09T16:14:34.326559
+CREATE TABLE "recipe_ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "recipe_id" INTEGER REFERENCES "recipes" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "ingredient_id" INTEGER REFERENCES "ingredients" ("id") ON DELETE CASCADE ON UPDATE CASCADE  ,
+    "quantity" DOUBLE
+);
+success!
+timestamp: 2025-06-13T12:40:55.089338
+ALTER TABLE "recipes" ADD "type" CHAR(512);
+timestamp: 2025-06-13T12:40:55.091361
+ALTER TABLE "recipes" ADD "image" CHAR(512);
+timestamp: 2025-06-13T12:40:55.091736
+ALTER TABLE "recipes" ADD "servings" INTEGER;
+success!
+timestamp: 2025-06-13T12:41:42.878929
+CREATE TABLE "ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "unit" CHAR(512),
+    "calories_per_unit" INTEGER,
+    "description" CHAR(512)
+);
+timestamp: 2025-06-13T12:41:57.021175
+CREATE TABLE "ingredients"(
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "name" CHAR(512),
+    "unit" CHAR(512),
+    "calories_per_unit" INTEGER,
+    "description" CHAR(512)
+);
+success!
+success!
+>>>>>>> Stashed changes:apps/recipe_manager/databases/sql.log
